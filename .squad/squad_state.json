@@ -1,0 +1,10 @@
+{
+  "active_role": "Squad Leader",
+  "active_task": null,
+  "sprint": {
+    "id": 1,
+    "day": 1,
+    "status": "Setting up infrastructure"
+  },
+  "history": []
+}

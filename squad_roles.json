@@ -1,0 +1,22 @@
+{
+  "roles": [
+    { "name": "Product Manager", "category": "Estratégia", "color": "#7F77DD" },
+    { "name": "Product Owner", "category": "Estratégia", "color": "#7F77DD" },
+    { "name": "Squad Leader", "category": "Liderança", "color": "#1D9E75" },
+    { "name": "Technical Leader", "category": "Liderança", "color": "#1D9E75" },
+    { "name": "UX Designer", "category": "Design", "color": "#D85A30" },
+    { "name": "Dev Frontend", "category": "Execução", "color": "#378ADD" },
+    { "name": "Dev Backend", "category": "Execução", "color": "#378ADD" },
+    { "name": "Especialista Infra", "category": "Execução", "color": "#378ADD" },
+    { "name": "SRE", "category": "Confiabilidade", "color": "#639922" },
+    { "name": "Especialista em Segurança", "category": "Governança", "color": "#BA7517" },
+    { "name": "Compliance", "category": "Governança", "color": "#BA7517" },
+    { "name": "Aprovador Automático", "category": "Governança", "color": "#BA7517" },
+    { "name": "QA", "category": "Qualidade", "color": "#D4537E" },
+    { "name": "Especialista LLM", "category": "IA", "color": "#534AB7" },
+    { "name": "AI Ops", "category": "IA", "color": "#534AB7" },
+    { "name": "Data Engineer", "category": "Dados", "color": "#888780" },
+    { "name": "Inovação de Produto", "category": "Produto", "color": "#888780" },
+    { "name": "Tech Writer", "category": "Documentação", "color": "#888780" }
+  ]
+}
