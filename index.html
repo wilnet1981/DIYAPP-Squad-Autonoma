@@ -14,6 +14,7 @@
         <div class="logo">DIYAPP</div>
         <nav class="nav-links">
             <li class="nav-item active">Dashboard</li>
+            <li class="nav-item" id="btn-new-app" style="color: #1D9E75; font-weight: 600;">+ Criar Novo App</li>
             <li class="nav-item">Meus Softwares</li>
             <li class="nav-item">Squad Factory</li>
             <li class="nav-item">Faturamento</li>
@@ -77,6 +78,21 @@
             </div>
         </section>
     </main>
+
+    <!-- CHAT MODAL -->
+    <div id="chat-modal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Entrevista com a Squad</h3>
+                <span class="close" id="close-modal">&times;</span>
+            </div>
+            <div id="chat-box" class="chat-container"></div>
+            <div class="chat-input-area">
+                <input type="text" id="chat-input" placeholder="Digite sua resposta...">
+                <button id="btn-send">Enviar</button>
+            </div>
+        </div>
+    </div>
 
     <script src="app.js"></script>
 </body>

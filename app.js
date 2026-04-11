@@ -1,15 +1,13 @@
 
-// Mock Data for Quotas (Based on platform_config.json)
-const config = {
+let config = {
     dailyTokenLimit: 500000,
-    dailyUsed: 320000,
+    dailyUsed: 0,
     weeklyTokenLimit: 2500000,
-    weeklyUsed: 1200000,
+    weeklyUsed: 0,
     monthlyTokenLimit: 10000000,
-    monthlyUsed: 4500000
+    monthlyUsed: 0
 };
 
-// Agent List (Simplified - in prod we'd fetch squad_roles.json)
 const agents = [
     "PM", "PO", "Squad Leader", "Tech Leader", "UX Designer", 
     "Frontend", "Backend", "Infra", "SRE", "Segurança", 
@@ -17,43 +15,49 @@ const agents = [
     "Data Engineer", "Inovação", "Tech Writer", "Melhoria Contínua"
 ];
 
-const cards = [
-    { title: "Refatorar Módulo de Login", status: "todo", tokens: "4k" },
-    { title: "Criar Landing Page para E-commerce", status: "doing", tokens: "12k" },
-    { title: "Dashboard de Vendas v2", status: "doing", tokens: "8k" },
-    { title: "Integrar API do Stripe", status: "done", tokens: "15k" }
-];
+let currentInterviewStage = 'start';
+let projectDraft = { title: '', goal: '', specs: '' };
 
 // Initialize UI
-function init() {
-    updateQuotas();
+async function init() {
+    await fetchProjects();
     renderAgents();
-    renderKanban();
+    setupEventListeners();
     simulateActivity();
 }
 
+async function fetchProjects() {
+    try {
+        const res = await fetch('/api/projects');
+        const data = await res.json();
+        renderKanban(data.list || []);
+        
+        // Mock update tokens based on database
+        if (data.list) {
+            config.dailyUsed = data.list.reduce((acc, p) => acc + (p.Tokens || 0), 0);
+            updateQuotas();
+        }
+    } catch (e) {
+        console.error("Erro ao carregar projetos do NocoDB:", e);
+    }
+}
+
 function updateQuotas() {
-    // Daily
-    const dailyPerc = (config.dailyUsed / config.dailyTokenLimit) * 100;
-    document.getElementById('daily-bar').style.width = dailyPerc + '%';
-    document.getElementById('daily-perc').innerText = Math.round(dailyPerc) + '%';
-    document.getElementById('daily-label').innerText = `${config.dailyUsed.toLocaleString()} / ${(config.dailyTokenLimit/1000)}k tokens`;
+    const updateBar = (id, used, limit, labelId, percId) => {
+        const perc = Math.min((used / limit) * 100, 100);
+        document.getElementById(id).style.width = perc + '%';
+        document.getElementById(percId).innerText = Math.round(perc) + '%';
+        document.getElementById(labelId).innerText = `${used.toLocaleString()} / ${(limit/1000).toLocaleString()}k tokens`;
+    };
 
-    // Weekly
-    const weeklyPerc = (config.weeklyUsed / config.weeklyTokenLimit) * 100;
-    document.getElementById('weekly-bar').style.width = weeklyPerc + '%';
-    document.getElementById('weekly-perc').innerText = Math.round(weeklyPerc) + '%';
-    document.getElementById('weekly-label').innerText = `${config.weeklyUsed.toLocaleString()} / ${(config.weeklyTokenLimit/1000000)}M tokens`;
-
-    // Monthly
-    const monthlyPerc = (config.monthlyUsed / config.monthlyTokenLimit) * 100;
-    document.getElementById('monthly-bar').style.width = monthlyPerc + '%';
-    document.getElementById('monthly-perc').innerText = Math.round(monthlyPerc) + '%';
-    document.getElementById('monthly-label').innerText = `${config.monthlyUsed.toLocaleString()} / ${(config.monthlyTokenLimit/1000000)}M tokens`;
+    updateBar('daily-bar', config.dailyUsed, config.dailyTokenLimit, 'daily-label', 'daily-perc');
+    updateBar('weekly-bar', config.weeklyUsed, config.weeklyTokenLimit, 'weekly-label', 'weekly-perc');
+    updateBar('monthly-bar', config.monthlyUsed, config.monthlyTokenLimit, 'monthly-label', 'monthly-perc');
 }
 
 function renderAgents() {
     const grid = document.getElementById('agent-grid');
+    grid.innerHTML = '';
     agents.forEach(name => {
         const card = document.createElement('div');
         card.className = 'agent-card';
@@ -65,40 +69,128 @@ function renderAgents() {
     });
 }
 
-function renderKanban() {
-    cards.forEach(card => {
-        const colId = `col-${card.status}`;
-        const container = document.getElementById(colId);
+function renderKanban(projectList) {
+    const cols = { 
+        'PENDING': document.getElementById('col-todo'),
+        'IN_PROGRESS': document.getElementById('col-doing'),
+        'DONE': document.getElementById('col-done')
+    };
+
+    // Clear columns
+    Object.values(cols).forEach(c => {
+        const header = c.querySelector('.col-header');
+        c.innerHTML = '';
+        c.appendChild(header);
+    });
+
+    projectList.forEach(p => {
+        const container = cols[p.Status] || cols['PENDING'];
         const cardEl = document.createElement('div');
         cardEl.className = 'card';
         cardEl.innerHTML = `
-            <div>${card.title}</div>
+            <div>${p.Title}</div>
             <div class="card-meta">
-                <span>ID: #${Math.floor(Math.random()*9000)+1000}</span>
-                <span>${card.tokens} tokens</span>
+                <span>ID: #${p.Id || '000'}</span>
+                <span>${(p.Tokens || 0).toLocaleString()} tokens</span>
             </div>
         `;
         container.appendChild(cardEl);
     });
 }
 
+// CHAT LOGIC
+function setupEventListeners() {
+    document.getElementById('btn-new-app').onclick = () => {
+        document.getElementById('chat-modal').style.display = 'flex';
+        startInterview();
+    };
+
+    document.getElementById('close-modal').onclick = () => {
+        document.getElementById('chat-modal').style.display = 'none';
+        currentInterviewStage = 'start';
+    };
+
+    document.getElementById('btn-send').onclick = () => sendChatMessage();
+    document.getElementById('chat-input').onkeypress = (e) => {
+        if (e.key === 'Enter') sendChatMessage();
+    };
+}
+
+async function startInterview() {
+    const chatBox = document.getElementById('chat-box');
+    chatBox.innerHTML = '';
+    const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: '', stage: 'start' })
+    });
+    const data = await res.json();
+    addMessage('agent', data.reply);
+    currentInterviewStage = data.nextStage;
+}
+
+async function sendChatMessage() {
+    const input = document.getElementById('chat-input');
+    const msg = input.value.trim();
+    if (!msg) return;
+
+    addMessage('user', msg);
+    input.value = '';
+
+    // Capture first message as title
+    if (currentInterviewStage === 'gathering_goal') projectDraft.title = msg;
+    if (currentInterviewStage === 'gathering_features') projectDraft.goal = msg;
+    if (currentInterviewStage === 'gathering_tech') projectDraft.specs = msg;
+
+    const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: msg, stage: currentInterviewStage })
+    });
+    const data = await res.json();
+    addMessage('agent', data.reply);
+    currentInterviewStage = data.nextStage;
+
+    if (currentInterviewStage === 'done') {
+        setTimeout(async () => {
+            await createProject();
+            document.getElementById('chat-modal').style.display = 'none';
+            await fetchProjects();
+        }, 2000);
+    }
+}
+
+function addMessage(type, text) {
+    const chatBox = document.getElementById('chat-box');
+    const div = document.createElement('div');
+    div.className = `message ${type}`;
+    div.innerText = text;
+    chatBox.appendChild(div);
+    chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+async function createProject() {
+    await fetch('/api/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            title: projectDraft.title || 'Novo App',
+            description: projectDraft.goal.substring(0, 50) + '...',
+            goal: projectDraft.goal,
+            specs: projectDraft.specs
+        })
+    });
+}
+
 function simulateActivity() {
     setInterval(() => {
-        const randomAgent = agents[Math.floor(Math.random() * agents.length)];
-        const light = document.getElementById(`agent-${randomAgent.replace(/\s+/g, '-')}`);
-        
-        if (light) {
-            light.classList.add('active');
-            
-            // Increment usage slightly
-            config.dailyUsed += Math.floor(Math.random() * 500);
-            updateQuotas();
-
-            setTimeout(() => {
-                light.classList.remove('active');
-            }, 3000);
+        const active = agents[Math.floor(Math.random() * agents.length)];
+        const el = document.getElementById(`agent-${active.replace(/\s+/g, '-')}`);
+        if (el) {
+            el.classList.add('active');
+            setTimeout(() => el.classList.remove('active'), 2000);
         }
-    }, 1500);
+    }, 3000);
 }
 
 document.addEventListener('DOMContentLoaded', init);
