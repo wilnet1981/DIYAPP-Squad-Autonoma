@@ -1,0 +1,268 @@
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-sans); }
+  .doc { max-width: 680px; padding: 0 0 32px; }
+
+  .cover { border-left: 3px solid var(--color-text-primary); padding: 20px 0 20px 20px; margin-bottom: 32px; }
+  .cover-label { font-size: 11px; font-weight: 500; color: var(--color-text-tertiary); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
+  .cover-title { font-size: 24px; font-weight: 500; color: var(--color-text-primary); line-height: 1.2; margin-bottom: 6px; }
+  .cover-sub { font-size: 13px; color: var(--color-text-secondary); }
+
+  .section { margin-bottom: 28px; }
+  .section-title { font-size: 11px; font-weight: 500; color: var(--color-text-tertiary); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; border-bottom: 1px solid var(--color-border-tertiary); padding-bottom: 6px; }
+
+  .principle { display: flex; gap: 12px; margin-bottom: 10px; align-items: flex-start; }
+  .principle-num { flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%; background: var(--color-background-secondary); border: 1px solid var(--color-border-tertiary); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 500; color: var(--color-text-secondary); }
+  .principle-body { flex: 1; }
+  .principle-body strong { font-size: 13px; font-weight: 500; color: var(--color-text-primary); display: block; margin-bottom: 2px; }
+  .principle-body span { font-size: 12px; color: var(--color-text-secondary); line-height: 1.6; }
+
+  .kanban-flow { display: flex; gap: 8px; align-items: stretch; margin-bottom: 8px; }
+  .kstage { flex: 1; border: 1px solid var(--color-border-tertiary); border-radius: 8px; padding: 10px 10px 10px; background: var(--color-background-secondary); }
+  .kstage-title { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text-tertiary); margin-bottom: 6px; }
+  .kstage-body { font-size: 11px; color: var(--color-text-secondary); line-height: 1.5; }
+
+  .kanban-arrow { display: flex; align-items: center; color: var(--color-text-tertiary); font-size: 14px; flex-shrink: 0; }
+
+  .approval-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+  .approval-card { border-radius: 8px; padding: 12px; border: 1px solid var(--color-border-tertiary); }
+  .approval-card.low { background: var(--color-background-success); border-color: var(--color-border-success); }
+  .approval-card.mid { background: var(--color-background-warning); border-color: var(--color-border-warning); }
+  .approval-card.high { background: var(--color-background-danger); border-color: var(--color-border-danger); }
+  .approval-label { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+  .approval-label.low { color: var(--color-text-success); }
+  .approval-label.mid { color: var(--color-text-warning); }
+  .approval-label.high { color: var(--color-text-danger); }
+  .approval-action { font-size: 12px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 4px; }
+  .approval-desc { font-size: 11px; color: var(--color-text-secondary); line-height: 1.5; }
+
+  .logic-box { border: 1px solid var(--color-border-tertiary); border-radius: 8px; padding: 14px; background: var(--color-background-secondary); margin-bottom: 8px; }
+  .logic-box code { font-family: var(--font-mono); font-size: 11px; color: var(--color-text-primary); line-height: 1.8; display: block; white-space: pre; }
+
+  .roles-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .role-pill { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--color-border-tertiary); background: var(--color-background-secondary); }
+  .role-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .role-name { font-size: 12px; font-weight: 500; color: var(--color-text-primary); }
+  .role-type { font-size: 11px; color: var(--color-text-tertiary); margin-left: auto; }
+
+  .collab-row { display: flex; gap: 8px; margin-bottom: 6px; align-items: flex-start; }
+  .collab-from { font-size: 11px; font-weight: 500; color: var(--color-text-primary); min-width: 90px; flex-shrink: 0; }
+  .collab-arrow-txt { font-size: 11px; color: var(--color-text-tertiary); margin: 0 4px; }
+  .collab-to { font-size: 11px; color: var(--color-text-secondary); }
+
+  .stack-row { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 4px; }
+  .stack-badge { font-size: 11px; padding: 3px 8px; border-radius: 4px; border: 1px solid var(--color-border-tertiary); background: var(--color-background-secondary); color: var(--color-text-secondary); }
+
+  .divider { border: none; border-top: 1px solid var(--color-border-tertiary); margin: 20px 0; }
+
+  .notice { border-left: 3px solid var(--color-border-warning); background: var(--color-background-warning); border-radius: 0 6px 6px 0; padding: 10px 12px; margin-bottom: 12px; font-size: 12px; color: var(--color-text-primary); line-height: 1.6; }
+
+  .sprint-row { display: grid; grid-template-columns: 80px 1fr; gap: 10px; margin-bottom: 8px; align-items: start; }
+  .sprint-day { font-size: 11px; font-weight: 500; color: var(--color-text-tertiary); padding-top: 1px; }
+  .sprint-events { font-size: 12px; color: var(--color-text-secondary); line-height: 1.6; }
+</style>
+
+<div class="doc">
+
+  <div class="cover">
+    <div class="cover-label">Squad Operating Manual — v1.0</div>
+    <div class="cover-title">Autonomous Senior Squad</div>
+    <div class="cover-sub">Sistema de operação, governança e fluxo de trabalho autônomo com aprovação inteligente</div>
+  </div>
+
+  <!-- PRINCÍPIOS -->
+  <div class="section">
+    <div class="section-title">Princípios de operação</div>
+    <div class="principle">
+      <div class="principle-num">1</div>
+      <div class="principle-body">
+        <strong>Autonomia com responsabilidade</strong>
+        <span>A squad opera de forma independente. Decisões técnicas, de produto e de design são tomadas internamente sem aprovação humana, exceto quando o Aprovador Automático escalona para nível humano por risco elevado.</span>
+      </div>
+    </div>
+    <div class="principle">
+      <div class="principle-num">2</div>
+      <div class="principle-body">
+        <strong>Kanban como lei</strong>
+        <span>Toda e qualquer atividade da squad existe como um card no Kanban. Nada ocorre fora do board. O Kanban é a fonte única de verdade sobre o estado do trabalho.</span>
+      </div>
+    </div>
+    <div class="principle">
+      <div class="principle-num">3</div>
+      <div class="principle-body">
+        <strong>Classificação antes de execução</strong>
+        <span>Nenhuma tarefa é executada sem ser classificada por complexidade, segurança e compliance. A classificação determina o caminho de aprovação obrigatório.</span>
+      </div>
+    </div>
+    <div class="principle">
+      <div class="principle-num">4</div>
+      <div class="principle-body">
+        <strong>Decomposição como estratégia de risco</strong>
+        <span>Tarefas de alto risco não são bloqueadas — elas são quebradas em partes menores até atingirem nível baixo. Só quando a decomposição é impossível a aprovação humana é acionada.</span>
+      </div>
+    </div>
+    <div class="principle">
+      <div class="principle-num">5</div>
+      <div class="principle-body">
+        <strong>GitHub como artefato final</strong>
+        <span>Todo output da squad termina em um commit, PR ou artefato no GitHub. Código, docs, configurações e decisões vivem no repositório. O Antigravity e o Claude Code são os executores; o GitHub é a memória.</span>
+      </div>
+    </div>
+    <div class="principle">
+      <div class="principle-num">6</div>
+      <div class="principle-body">
+        <strong>Melhor LLM para cada tarefa</strong>
+        <span>O Especialista LLM avalia cada tipo de tarefa e recomenda o modelo mais adequado (Claude, Gemini, GPT, Mistral, etc.). Nenhum agente usa um modelo fixo — o modelo é determinado pela natureza da tarefa.</span>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- KANBAN FLOW -->
+  <div class="section">
+    <div class="section-title">Fluxo do Kanban autônomo</div>
+    <div class="kanban-flow">
+      <div class="kstage">
+        <div class="kstage-title">Backlog</div>
+        <div class="kstage-body">Toda nova demanda, ideia ou bug entra aqui. Sem triagem, sem prioridade ainda.</div>
+      </div>
+      <div class="kanban-arrow">→</div>
+      <div class="kstage">
+        <div class="kstage-title">Classificação</div>
+        <div class="kstage-body">Aprovador Automático analisa complexidade + segurança + compliance e atribui nível.</div>
+      </div>
+      <div class="kanban-arrow">→</div>
+      <div class="kstage">
+        <div class="kstage-title">Aprovação</div>
+        <div class="kstage-body">Caminho determinado pelo nível. Baixo: auto. Médio/Alto: decomposição ou humano.</div>
+      </div>
+      <div class="kanban-arrow">→</div>
+      <div class="kstage">
+        <div class="kstage-title">Em execução</div>
+        <div class="kstage-body">Agente responsável executa. Antigravity orquestra; Claude Code implementa.</div>
+      </div>
+      <div class="kanban-arrow">→</div>
+      <div class="kstage">
+        <div class="kstage-title">Done</div>
+        <div class="kstage-body">PR mergeado, artefato entregue, resultado documentado pelo Tech Writer.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- APPROVAL LOGIC -->
+  <div class="section">
+    <div class="section-title">Lógica de aprovação por nível</div>
+    <div class="approval-grid">
+      <div class="approval-card low">
+        <div class="approval-label low">Nível baixo</div>
+        <div class="approval-action">Aprovação automática</div>
+        <div class="approval-desc">Tarefa isolada, sem toque em dados sensíveis, sem impacto regulatório. Execução imediata.</div>
+      </div>
+      <div class="approval-card mid">
+        <div class="approval-label mid">Nível médio</div>
+        <div class="approval-action">Decompor → reavaliar</div>
+        <div class="approval-desc">Aprovador tenta quebrar em subtarefas de nível baixo. Se todas virarem baixo, executa. Se não, escala.</div>
+      </div>
+      <div class="approval-card high">
+        <div class="approval-label high">Nível alto</div>
+        <div class="approval-action">Decompor ou escalar humano</div>
+        <div class="approval-desc">Mesma tentativa de decomposição. Se irreducível: notificação humana obrigatória com relatório de risco.</div>
+      </div>
+    </div>
+
+    <div class="logic-box">
+      <code>TAREFA ENTRA
+  ├─ Classificador analisa 3 dimensões:
+  │    ├─ Complexidade  (1-10)
+  │    ├─ Segurança     (1-10)
+  │    └─ Compliance    (1-10)
+  │
+  ├─ Score ≤ 3.0  → BAIXO  → auto-aprova ✓
+  ├─ Score 3.1–6.9 → MÉDIO  → tenta decomposição
+  └─ Score ≥ 7.0  → ALTO   → tenta decomposição
+
+DECOMPOSIÇÃO:
+  ├─ Cada subtarefa reavaliada individualmente
+  ├─ Se todas ficarem BAIXO → executa ✓
+  └─ Se alguma permanecer MÉDIO/ALTO → 🚨 aprovação humana</code>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- PAPÉIS -->
+  <div class="section">
+    <div class="section-title">Composição da squad — 19 papéis</div>
+    <div class="roles-grid">
+      <div class="role-pill"><div class="role-dot" style="background:#7F77DD"></div><div class="role-name">Product Manager</div><div class="role-type">Estratégia</div></div>
+      <div class="role-pill"><div class="role-dot" style="background:#7F77DD"></div><div class="role-name">Product Owner</div><div class="role-type">Estratégia</div></div>
+      <div class="role-pill"><div class="role-dot" style="background:#1D9E75"></div><div class="role-name">Squad Leader</div><div class="role-type">Liderança</div></div>
+      <div class="role-pill"><div class="role-dot" style="background:#1D9E75"></div><div class="role-name">Technical Leader</div><div class="role-type">Liderança</div></div>
+      <div class="role-pill"><div class="role-dot" style="background:#D85A30"></div><div class="role-name">UX Designer</div><div class="role-type">Design</div></div>
+      <div class="role-pill"><div class="role-dot" style="background:#378ADD"></div><div class="role-name">Dev Frontend</div><div class="role-type">Execução</div></div>
+      <div class="role-pill"><div class="role-dot" style="background:#378ADD"></div><div class="role-name">Dev Backend</div><div class="role-type">Execução</div></div>
+      <div class="role-pill"><div class="role-dot" style="background:#378ADD"></div><div class="role-name">Especialista Infra</div><div class="role-type">Execução</div></div>
+      <div class="role-pill"><div class="role-dot" style="background:#639922"></div><div class="role-name">SRE</div><div class="role-type">Confiabilidade</div></div>
+      <div class="role-pill"><div class="role-dot" style="background:#BA7517"></div><div class="role-name">Especialista em Segurança</div><div class="role-type">Governança</div></div>
+      <div class="role-pill"><div class="role-dot" style="background:#BA7517"></div><div class="role-name">Compliance</div><div class="role-type">Governança</div></div>
+      <div class="role-pill"><div class="role-dot" style="background:#BA7517"></div><div class="role-name">Aprovador Automático</div><div class="role-type">Governança</div></div>
+      <div class="role-pill"><div class="role-dot" style="background:#D4537E"></div><div class="role-name">QA</div><div class="role-type">Qualidade</div></div>
+      <div class="role-pill"><div class="role-dot" style="background:#534AB7"></div><div class="role-name">Especialista LLM</div><div class="role-type">IA</div></div>
+      <div class="role-pill"><div class="role-dot" style="background:#534AB7"></div><div class="role-name">AI Ops</div><div class="role-type">IA</div></div>
+      <div class="role-pill"><div class="role-dot" style="background:#888780"></div><div class="role-name">Data Engineer</div><div class="role-type">Dados</div></div>
+      <div class="role-pill"><div class="role-dot" style="background:#888780"></div><div class="role-name">Inovação de Produto</div><div class="role-type">Produto</div></div>
+      <div class="role-pill"><div class="role-dot" style="background:#888780"></div><div class="role-name">Tech Writer</div><div class="role-type">Documentação</div></div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- CADÊNCIA -->
+  <div class="section">
+    <div class="section-title">Cadência operacional — sprint de 2 semanas</div>
+    <div class="sprint-row">
+      <div class="sprint-day">Seg — Dia 1</div>
+      <div class="sprint-events">Sprint Planning autônomo: PM + PO definem prioridades no Backlog. Aprovador classifica todos os cards. Squad Leader distribui por papel.</div>
+    </div>
+    <div class="sprint-row">
+      <div class="sprint-day">Diário</div>
+      <div class="sprint-events">Daily async via Kanban: cada agente atualiza o status do seu card. Bloqueios são sinalizados automaticamente ao Squad Leader.</div>
+    </div>
+    <div class="sprint-row">
+      <div class="sprint-day">Sex — Dia 5</div>
+      <div class="sprint-events">Mid-sprint check: Tech Lead revisa PRs abertos. QA valida o que foi entregue. SRE verifica alertas de confiabilidade.</div>
+    </div>
+    <div class="sprint-row">
+      <div class="sprint-day">Sex — Dia 10</div>
+      <div class="sprint-events">Sprint Review + Retrospectiva: Demo do que foi entregue. AI Ops analisa custo e performance dos LLMs usados. Tech Writer publica documentação da sprint.</div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- STACK -->
+  <div class="section">
+    <div class="section-title">Stack de execução</div>
+    <div style="display:grid; grid-template-columns: 100px 1fr; gap: 8px; align-items: start;">
+      <div style="font-size:11px; color:var(--color-text-tertiary); padding-top:3px;">Orquestração</div>
+      <div class="stack-row"><span class="stack-badge">Antigravity (Manager View)</span><span class="stack-badge">Claude Code (CLI)</span></div>
+      <div style="font-size:11px; color:var(--color-text-tertiary); padding-top:3px;">Kanban</div>
+      <div class="stack-row"><span class="stack-badge">Linear / Jira</span><span class="stack-badge">n8n (automação)</span><span class="stack-badge">Claude API (classificador)</span></div>
+      <div style="font-size:11px; color:var(--color-text-tertiary); padding-top:3px;">Código</div>
+      <div class="stack-row"><span class="stack-badge">GitHub</span><span class="stack-badge">GitHub Actions (CI/CD)</span></div>
+      <div style="font-size:11px; color:var(--color-text-tertiary); padding-top:3px;">Infra</div>
+      <div class="stack-row"><span class="stack-badge">AWS / GCP</span><span class="stack-badge">Terraform</span><span class="stack-badge">Kubernetes</span></div>
+      <div style="font-size:11px; color:var(--color-text-tertiary); padding-top:3px;">LLM Gateway</div>
+      <div class="stack-row"><span class="stack-badge">LiteLLM / PortKey</span><span class="stack-badge">LangSmith (observabilidade)</span></div>
+      <div style="font-size:11px; color:var(--color-text-tertiary); padding-top:3px;">Dados</div>
+      <div class="stack-row"><span class="stack-badge">BigQuery / Snowflake</span><span class="stack-badge">dbt</span><span class="stack-badge">Metabase</span></div>
+    </div>
+  </div>
+
+  <div class="notice">
+    Regra de ouro: nenhuma aprovação humana deve ser a primeira resposta a uma tarefa complexa. A decomposição é sempre tentada antes. A aprovação humana é o último recurso — não o caminho padrão.
+  </div>
+
+</div>
