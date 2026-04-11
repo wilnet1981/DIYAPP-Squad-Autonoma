@@ -1,0 +1,371 @@
+
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  .doc { max-width: 680px; padding: 0 0 32px; font-family: var(--font-sans); }
+
+  .cover { background: var(--color-background-secondary); border: 1px solid var(--color-border-tertiary); border-radius: 8px; padding: 24px; margin-bottom: 28px; }
+  .cover-label { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-text-tertiary); margin-bottom: 8px; }
+  .cover-title { font-size: 26px; font-weight: 500; color: var(--color-text-primary); line-height: 1.2; margin-bottom: 6px; }
+  .cover-sub { font-size: 13px; color: var(--color-text-secondary); margin-bottom: 16px; }
+  .cover-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .cover-stat { text-align: center; }
+  .cover-stat-num { font-size: 22px; font-weight: 500; color: var(--color-text-primary); }
+  .cover-stat-label { font-size: 10px; color: var(--color-text-tertiary); text-transform: uppercase; letter-spacing: 0.05em; }
+
+  .section { margin-bottom: 28px; }
+  .section-title { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.08em; color: var(--color-text-tertiary); border-bottom: 1px solid var(--color-border-tertiary); padding-bottom: 5px; margin-bottom: 12px; }
+
+  .divider { border: none; border-top: 1px solid var(--color-border-tertiary); margin: 24px 0; }
+
+  .group-title { font-size: 11px; font-weight: 500; color: var(--color-text-secondary); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 8px; margin-top: 16px; }
+  .group-title:first-child { margin-top: 0; }
+
+  .role-row { display: grid; grid-template-columns: 28px 160px 1fr 80px; gap: 8px; margin-bottom: 5px; align-items: start; padding: 7px 10px; border-radius: 6px; border: 1px solid var(--color-border-tertiary); background: var(--color-background-secondary); }
+  .role-num { font-size: 10px; color: var(--color-text-tertiary); font-weight: 500; padding-top: 1px; }
+  .role-name { font-size: 12px; font-weight: 500; color: var(--color-text-primary); }
+  .role-essence { font-size: 11px; color: var(--color-text-secondary); line-height: 1.5; }
+  .role-sla { font-size: 10px; color: var(--color-text-tertiary); text-align: right; line-height: 1.4; }
+
+  .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; flex-shrink: 0; }
+
+  .flow-section { margin-bottom: 24px; }
+  .flow-title { font-size: 11px; font-weight: 500; color: var(--color-text-secondary); margin-bottom: 8px; }
+
+  .kanban-visual { display: flex; gap: 4px; margin-bottom: 8px; }
+  .k-col { flex: 1; }
+  .k-header { font-size: 9px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text-tertiary); padding: 4px 6px; margin-bottom: 4px; border-bottom: 2px solid var(--color-border-tertiary); }
+  .k-card { font-size: 10px; color: var(--color-text-secondary); background: var(--color-background-secondary); border: 1px solid var(--color-border-tertiary); border-radius: 4px; padding: 5px 6px; margin-bottom: 3px; line-height: 1.4; }
+  .k-card.low { border-left: 3px solid var(--color-border-success); }
+  .k-card.mid { border-left: 3px solid var(--color-border-warning); }
+  .k-card.high { border-left: 3px solid var(--color-border-danger); }
+  .k-card.human { border-left: 3px solid #534AB7; }
+
+  .score-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 8px; }
+  .score-card { border-radius: 6px; padding: 10px; border: 1px solid var(--color-border-tertiary); }
+  .score-card.low { background: var(--color-background-success); border-color: var(--color-border-success); }
+  .score-card.mid { background: var(--color-background-warning); border-color: var(--color-border-warning); }
+  .score-card.high { background: var(--color-background-danger); border-color: var(--color-border-danger); }
+  .score-lvl { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 2px; }
+  .score-lvl.low { color: var(--color-text-success); }
+  .score-lvl.mid { color: var(--color-text-warning); }
+  .score-lvl.high { color: var(--color-text-danger); }
+  .score-range { font-size: 14px; font-weight: 500; color: var(--color-text-primary); margin-bottom: 3px; }
+  .score-act { font-size: 10px; color: var(--color-text-secondary); line-height: 1.4; }
+
+  .sprint-grid { display: grid; grid-template-columns: 90px 1fr; gap: 8px; margin-bottom: 6px; }
+  .sprint-day { font-size: 11px; font-weight: 500; color: var(--color-text-tertiary); padding-top: 1px; }
+  .sprint-events { font-size: 11px; color: var(--color-text-secondary); line-height: 1.6; }
+
+  .stack-row-simple { display: grid; grid-template-columns: 110px 1fr; gap: 8px; margin-bottom: 5px; font-size: 11px; }
+  .stack-lbl { font-weight: 500; color: var(--color-text-primary); }
+  .stack-val { color: var(--color-text-secondary); }
+
+  .principle-row { display: flex; gap: 8px; margin-bottom: 6px; align-items: flex-start; }
+  .principle-num { flex-shrink: 0; width: 18px; height: 18px; border-radius: 50%; background: var(--color-background-secondary); border: 1px solid var(--color-border-tertiary); display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 500; color: var(--color-text-secondary); }
+  .principle-text { font-size: 12px; color: var(--color-text-secondary); line-height: 1.6; }
+  .principle-text strong { color: var(--color-text-primary); font-weight: 500; }
+
+  .escalation-box { border: 1px solid var(--color-border-tertiary); border-radius: 8px; padding: 14px; background: var(--color-background-secondary); margin-bottom: 8px; }
+  .escalation-box code { font-family: var(--font-mono); font-size: 10px; color: var(--color-text-primary); line-height: 1.9; display: block; white-space: pre-wrap; }
+
+  .golden-rule { border-left: 3px solid var(--color-border-warning); background: var(--color-background-warning); border-radius: 0 6px 6px 0; padding: 12px 14px; margin-bottom: 8px; font-size: 12px; color: var(--color-text-primary); line-height: 1.6; }
+</style>
+
+<div class="doc">
+
+  <div class="cover">
+    <div class="cover-label">Documento de referência final — Autonomous Senior Squad</div>
+    <div class="cover-title">Squad Autônoma Sênior</div>
+    <div class="cover-sub">Manual completo — 19 papéis, 1 sistema, 1 propósito: entregar com autonomia, qualidade e governança.</div>
+    <div class="cover-stats">
+      <div class="cover-stat"><div class="cover-stat-num">19</div><div class="cover-stat-label">Papéis</div></div>
+      <div class="cover-stat"><div class="cover-stat-num">3</div><div class="cover-stat-label">Dimensões de risco</div></div>
+      <div class="cover-stat"><div class="cover-stat-num">2</div><div class="cover-stat-label">Semanas / sprint</div></div>
+      <div class="cover-stat"><div class="cover-stat-num">4h</div><div class="cover-stat-label">SLA humano máx.</div></div>
+    </div>
+  </div>
+
+  <!-- TODOS OS PAPÉIS -->
+  <div class="section">
+    <div class="section-title">Os 19 papéis — referência rápida</div>
+
+    <div class="group-title">Estratégia e produto</div>
+    <div class="role-row">
+      <div class="role-num">01</div>
+      <div class="role-name"><span class="dot" style="background:#7F77DD"></span>Product Manager</div>
+      <div class="role-essence">Visão, priorização RICE, receptor de escalações humanas do Aprovador</div>
+      <div class="role-sla">Escalações: 4h</div>
+    </div>
+    <div class="role-row">
+      <div class="role-num">02</div>
+      <div class="role-name"><span class="dot" style="background:#7F77DD"></span>Product Owner</div>
+      <div class="role-essence">Histórias Gherkin, Definition of Done, árbitro do "pronto"</div>
+      <div class="role-sla">Validação: 8h</div>
+    </div>
+    <div class="role-row">
+      <div class="role-num">17</div>
+      <div class="role-name"><span class="dot" style="background:#D85A30"></span>Inovação de Produto</div>
+      <div class="role-essence">Sinais de mercado, experimentos validados, radar de inovação e IA</div>
+      <div class="role-sla">Briefing: quinzenal</div>
+    </div>
+
+    <div class="group-title">Liderança operacional</div>
+    <div class="role-row">
+      <div class="role-num">03</div>
+      <div class="role-name"><span class="dot" style="background:#1D9E75"></span>Squad Leader</div>
+      <div class="role-essence">Fluxo do Kanban, remoção de bloqueios, proteção de escopo do sprint</div>
+      <div class="role-sla">Bloqueio crítico: 2h</div>
+    </div>
+    <div class="role-row">
+      <div class="role-num">04</div>
+      <div class="role-name"><span class="dot" style="background:#378ADD"></span>Technical Leader</div>
+      <div class="role-essence">Revisão de PRs, ADRs, padrões técnicos e débito técnico controlado</div>
+      <div class="role-sla">PR review: 8h / 2h hotfix</div>
+    </div>
+
+    <div class="group-title">Design e execução</div>
+    <div class="role-row">
+      <div class="role-num">05</div>
+      <div class="role-name"><span class="dot" style="background:#D4537E"></span>UX Designer</div>
+      <div class="role-essence">Pesquisa de usuário, especificação de design, Design System e fluxos de IA</div>
+      <div class="role-sla">Especificação: por história</div>
+    </div>
+    <div class="role-row">
+      <div class="role-num">06</div>
+      <div class="role-name"><span class="dot" style="background:#378ADD"></span>Dev Frontend</div>
+      <div class="role-essence">Fidelidade ao design, Core Web Vitals, acessibilidade e fluxos de LLM</div>
+      <div class="role-sla">LCP &lt;2.5s / INP &lt;200ms</div>
+    </div>
+    <div class="role-row">
+      <div class="role-num">07</div>
+      <div class="role-name"><span class="dot" style="background:#639922"></span>Dev Backend</div>
+      <div class="role-essence">APIs confiáveis, resiliência, segurança de dados e integração de LLMs</div>
+      <div class="role-sla">P95 &lt;300ms / erros &lt;0.1%</div>
+    </div>
+
+    <div class="group-title">Infraestrutura e confiabilidade</div>
+    <div class="role-row">
+      <div class="role-num">08</div>
+      <div class="role-name"><span class="dot" style="background:#BA7517"></span>Especialista Infra</div>
+      <div class="role-essence">IaC (Terraform), CI/CD, secrets, LLM Gateway e custo de cloud</div>
+      <div class="role-sla">Deploy: &lt;15min commit→prod</div>
+    </div>
+    <div class="role-row">
+      <div class="role-num">09</div>
+      <div class="role-name"><span class="dot" style="background:#639922"></span>SRE</div>
+      <div class="role-essence">SLOs, error budget, resposta a incidentes, postmortems e chaos engineering</div>
+      <div class="role-sla">Sev1: 5min / MTTR: 30min</div>
+    </div>
+
+    <div class="group-title">Governança e segurança</div>
+    <div class="role-row">
+      <div class="role-num">10</div>
+      <div class="role-name"><span class="dot" style="background:#A32D2D"></span>Especialista Segurança</div>
+      <div class="role-essence">Threat modeling STRIDE, revisão de PRs, CVEs e segurança de LLMs</div>
+      <div class="role-sla">CVE crítico: 24h / PR: 4h</div>
+    </div>
+    <div class="role-row">
+      <div class="role-num">11</div>
+      <div class="role-name"><span class="dot" style="background:#534AB7"></span>Compliance</div>
+      <div class="role-essence">LGPD, SOC2, EU AI Act, DPIAs, notificação de incidentes em 72h</div>
+      <div class="role-sla">Notificação ANPD: 72h</div>
+    </div>
+    <div class="role-row">
+      <div class="role-num">12</div>
+      <div class="role-name"><span class="dot" style="background:#BA7517"></span>Aprovador Automático</div>
+      <div class="role-essence">Classificação de risco, decomposição de tarefas, escalonamento humano</div>
+      <div class="role-sla">Classificação: 2h</div>
+    </div>
+    <div class="role-row">
+      <div class="role-num">13</div>
+      <div class="role-name"><span class="dot" style="background:#D4537E"></span>QA</div>
+      <div class="role-essence">Pirâmide de testes, golden dataset de LLM, bugs por severidade</div>
+      <div class="role-sla">Bug crítico: fix &lt;4h</div>
+    </div>
+
+    <div class="group-title">Inteligência artificial e dados</div>
+    <div class="role-row">
+      <div class="role-num">14</div>
+      <div class="role-name"><span class="dot" style="background:#534AB7"></span>Especialista LLM</div>
+      <div class="role-essence">Seleção de modelo por caso, prompts versionados, fallback chain e custo</div>
+      <div class="role-sla">100% com fallback config.</div>
+    </div>
+    <div class="role-row">
+      <div class="role-num">15</div>
+      <div class="role-name"><span class="dot" style="background:#534AB7"></span>AI Ops</div>
+      <div class="role-essence">Monitoramento de custo, drift, latência e anomalias de LLMs em produção</div>
+      <div class="role-sla">Relatório: toda segunda</div>
+    </div>
+    <div class="role-row">
+      <div class="role-num">16</div>
+      <div class="role-name"><span class="dot" style="background:#888780"></span>Data Engineer</div>
+      <div class="role-essence">Pipelines dbt (raw→staging→marts), qualidade de dados e catálogo</div>
+      <div class="role-sla">SLA por consumidor: 1h–24h</div>
+    </div>
+
+    <div class="group-title">Conhecimento e documentação</div>
+    <div class="role-row">
+      <div class="role-num">18</div>
+      <div class="role-name"><span class="dot" style="background:#888780"></span>Tech Writer</div>
+      <div class="role-essence">Docs de produto, API, release notes e base de conhecimento da squad</div>
+      <div class="role-sla">Docs: 24h após deploy</div>
+    </div>
+
+    <div class="group-title">Meta-aprendizado</div>
+    <div class="role-row">
+      <div class="role-num">19</div>
+      <div class="role-name"><span class="dot" style="background:#D85A30"></span>Melhoria Contínua</div>
+      <div class="role-essence">Análise de causa raiz, patches de instrução (prompts), evolução da squad</div>
+      <div class="role-sla">Patch: < 4h após falha</div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- KANBAN E APROVAÇÃO -->
+  <div class="section">
+    <div class="section-title">Kanban autônomo — fluxo de governança</div>
+
+    <div class="kanban-visual">
+      <div class="k-col">
+        <div class="k-header">Backlog</div>
+        <div class="k-card">Nova demanda do PM</div>
+        <div class="k-card">Bug reportado</div>
+        <div class="k-card">Ideia de inovação</div>
+      </div>
+      <div class="k-col">
+        <div class="k-header">Classificação</div>
+        <div class="k-card low">Score 2.1 → Baixo</div>
+        <div class="k-card mid">Score 4.8 → Médio</div>
+        <div class="k-card high">Score 7.3 → Alto</div>
+      </div>
+      <div class="k-col">
+        <div class="k-header">Aprovação</div>
+        <div class="k-card low">Auto-aprovada ✓</div>
+        <div class="k-card mid">Decomposta → 3 Baixo ✓</div>
+        <div class="k-card human">Escalonada → PM</div>
+      </div>
+      <div class="k-col">
+        <div class="k-header">Execução</div>
+        <div class="k-card">Em andamento</div>
+        <div class="k-card">Em revisão</div>
+        <div class="k-card">Aguardando QA</div>
+      </div>
+      <div class="k-col">
+        <div class="k-header">Done</div>
+        <div class="k-card">PR mergeado</div>
+        <div class="k-card">PO validou</div>
+        <div class="k-card">Docs atualizadas</div>
+      </div>
+    </div>
+
+    <div class="score-row">
+      <div class="score-card low">
+        <div class="score-lvl low">Baixo</div>
+        <div class="score-range">Média ≤ 3.0</div>
+        <div class="score-act">Aprovação automática. Card para execução imediata.</div>
+      </div>
+      <div class="score-card mid">
+        <div class="score-lvl mid">Médio</div>
+        <div class="score-range">Média 3.1–6.9</div>
+        <div class="score-act">Tenta decomposição. Se todas BAIXO → auto. Senão → PM.</div>
+      </div>
+      <div class="score-card high">
+        <div class="score-lvl high">Alto</div>
+        <div class="score-range">Média ≥ 7.0</div>
+        <div class="score-act">Tenta decomposição. Se irreducível → PM obrigatório.</div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- CADÊNCIA -->
+  <div class="section">
+    <div class="section-title">Cadência operacional — sprint de 2 semanas</div>
+    <div class="sprint-grid">
+      <div class="sprint-day">Seg — Dia 1</div>
+      <div class="sprint-events">Sprint Planning: PM publica itens priorizados. Aprovador classifica todos os cards. Squad Leader distribui por papel. PO confirma que histórias estão refinadas.</div>
+    </div>
+    <div class="sprint-grid">
+      <div class="sprint-day">Diariamente</div>
+      <div class="sprint-events">Atualização async via Kanban. Squad Leader monitora cards parados >24h. Aprovador processa novos cards em até 2h. SRE monitora SLOs e error budget.</div>
+    </div>
+    <div class="sprint-grid">
+      <div class="sprint-day">Sex — Dia 5</div>
+      <div class="sprint-events">Mid-sprint check: Tech Lead revisa PRs abertos. QA valida entregas. SRE verifica error budget. AI Ops publica relatório semanal de IA. Data Engineer confirma SLAs de pipeline.</div>
+    </div>
+    <div class="sprint-grid">
+      <div class="sprint-day">Sex — Dia 10</div>
+      <div class="sprint-events">Sprint Review: PO valida todas as entregas. Tech Writer publica docs e release notes. Inovação apresenta novos sinais de mercado. Squad Leader conduz retrospectiva com métricas de fluxo.</div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- STACK -->
+  <div class="section">
+    <div class="section-title">Stack de execução</div>
+    <div class="stack-row-simple"><div class="stack-lbl">Orquestração de agentes</div><div class="stack-val">Antigravity Manager View + Claude Code CLI</div></div>
+    <div class="stack-row-simple"><div class="stack-lbl">Código e CI/CD</div><div class="stack-val">GitHub + GitHub Actions</div></div>
+    <div class="stack-row-simple"><div class="stack-lbl">Kanban e automação</div><div class="stack-val">Linear/Jira + n8n + Claude API (classificador)</div></div>
+    <div class="stack-row-simple"><div class="stack-lbl">Cloud e infra</div><div class="stack-val">AWS/GCP + Terraform + Kubernetes</div></div>
+    <div class="stack-row-simple"><div class="stack-lbl">LLM Gateway</div><div class="stack-val">LiteLLM / PortKey + OpenRouter (opcional)</div></div>
+    <div class="stack-row-simple"><div class="stack-lbl">Observabilidade</div><div class="stack-val">Datadog/Grafana + LangSmith/Helicone</div></div>
+    <div class="stack-row-simple"><div class="stack-lbl">Dados</div><div class="stack-val">BigQuery/Snowflake + dbt + Metabase</div></div>
+    <div class="stack-row-simple"><div class="stack-lbl">Segurança e secrets</div><div class="stack-val">Vault + Snyk + SonarQube</div></div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ESCALONAMENTO -->
+  <div class="section">
+    <div class="section-title">Cadeia de escalonamento — quem aciona quem</div>
+    <div class="escalation-box">
+      <code>APROVADOR AUTOMÁTICO detecta tarefa de alto risco irredutível
+  └─ Notifica PM (SLA: 4h para resposta)
+       ├─ PM não responde em 2h → Squad Leader acionado
+       └─ PM responde → aprova / rejeita / reformula
+
+SRE detecta incidente Sev1/2
+  └─ Aciona Squad Leader + PM imediatamente
+       └─ Se componente de segurança → aciona Especialista Segurança
+            └─ Se dados pessoais envolvidos → aciona Compliance (72h ANPD)
+
+SQUAD LEADER detecta sprint em risco >30%
+  └─ Notifica PM para renegociação de escopo
+       └─ Remove item de menor impacto (nunca reduz qualidade)
+
+ESPECIALISTA SEGURANÇA detecta CVE crítico
+  └─ Aciona Tech Lead (stop de merge) + SRE + Infra
+       └─ Patch em até 24h ou isolamento do serviço
+
+AI OPS detecta anomalia de custo >20%
+  └─ Notifica Especialista LLM + Segurança com dados detalhados
+       └─ Se suspeita de ataque: Segurança lidera investigação
+
+DATA ENGINEER detecta falha de pipeline
+  └─ Notifica consumidores afetados ANTES de investigar
+       └─ PM (métricas) / AI Ops (custo LLM) / SRE (operacional)</code>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- PRINCÍPIOS -->
+  <div class="section">
+    <div class="section-title">Os 6 princípios invioláveis da squad</div>
+    <div class="principle-row"><div class="principle-num">1</div><div class="principle-text"><strong>Autonomia com responsabilidade.</strong> A squad decide e executa sem aprovação humana — exceto quando o risco justifica escalonamento.</div></div>
+    <div class="principle-row"><div class="principle-num">2</div><div class="principle-text"><strong>Kanban como lei.</strong> Toda atividade existe como card. Nada ocorre fora do board. O Kanban é a fonte única de verdade.</div></div>
+    <div class="principle-row"><div class="principle-num">3</div><div class="principle-text"><strong>Classificação antes de execução.</strong> Nenhuma tarefa é executada sem avaliação de complexidade, segurança e compliance.</div></div>
+    <div class="principle-row"><div class="principle-num">4</div><div class="principle-text"><strong>Decomposição como estratégia de risco.</strong> Tarefas complexas são quebradas em partes menores antes de qualquer escalonamento humano.</div></div>
+    <div class="principle-row"><div class="principle-num">5</div><div class="principle-text"><strong>GitHub como memória.</strong> Todo output termina em commit, PR ou artefato versionado. O repositório é a memória da squad.</div></div>
+    <div class="principle-row"><div class="principle-num">6</div><div class="principle-text"><strong>Melhor LLM para cada tarefa.</strong> Nenhum agente usa modelo fixo. O Especialista LLM determina o modelo certo por caso de uso.</div></div>
+    <div class="principle-row"><div class="principle-num">7</div><div class="principle-text"><strong>Aprendizado sistêmico.</strong> Erros nunca se repetem. Toda falha gera um patch de instrução no agente responsável.</div></div>
+  </div>
+
+  <div class="golden-rule">
+    Regra de ouro da squad: <strong>aprovação humana é o último recurso — nunca o caminho padrão.</strong> A decomposição é sempre tentada antes. Uma squad autônoma sênior não pede permissão para existir — pede permissão apenas quando o risco exige supervisão humana real.
+  </div>
+
+</div>

@@ -17,6 +17,7 @@
     { "name": "AI Ops", "category": "IA", "color": "#534AB7" },
     { "name": "Data Engineer", "category": "Dados", "color": "#888780" },
     { "name": "Inovação de Produto", "category": "Produto", "color": "#888780" },
-    { "name": "Tech Writer", "category": "Documentação", "color": "#888780" }
+    { "name": "Tech Writer", "category": "Documentação", "color": "#888780" },
+    { "name": "Melhoria Contínua", "category": "Meta-aprendizado", "color": "#D85A30" }
   ]
 }

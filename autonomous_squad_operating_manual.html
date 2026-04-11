@@ -66,9 +66,12 @@
 <div class="doc">
 
   <div class="cover">
-    <div class="cover-label">Squad Operating Manual — v1.0</div>
-    <div class="cover-title">Autonomous Senior Squad</div>
-    <div class="cover-sub">Sistema de operação, governança e fluxo de trabalho autônomo com aprovação inteligente</div>
+    <div class="cover-eyebrow" style="display:flex; justify-content:space-between;">
+      <span>Manual Operacional — v2.0 Autônoma</span>
+      <a href="index.html" style="color:#7F77DD; text-decoration:none; font-weight:600;">Abrir Plataforma DIYAPP ↗</a>
+    </div>
+    <div class="cover-title">Squad Autônoma Sênior</div>
+    <div class="cover-sub">Diretrizes de governança, execução técnica e infraestrutura para squads 100% autônomas.</div>
   </div>
 
   <!-- PRINCÍPIOS -->
@@ -114,6 +117,13 @@
       <div class="principle-body">
         <strong>Melhor LLM para cada tarefa</strong>
         <span>O Especialista LLM avalia cada tipo de tarefa e recomenda o modelo mais adequado (Claude, Gemini, GPT, Mistral, etc.). Nenhum agente usa um modelo fixo — o modelo é determinado pela natureza da tarefa.</span>
+      </div>
+    </div>
+    <div class="principle">
+      <div class="principle-num">7</div>
+      <div class="principle-body">
+        <strong>Aprendizado sistêmico</strong>
+        <span>Toda falha (bug ou incidente) é tratada como uma oportunidade de atualização da inteligência coletiva. O erro não apenas é corrigido no código, mas também "ensinado" ao agente responsável através da atualização de suas instruções.</span>
       </div>
     </div>
   </div>
@@ -214,6 +224,7 @@ DECOMPOSIÇÃO:
       <div class="role-pill"><div class="role-dot" style="background:#888780"></div><div class="role-name">Data Engineer</div><div class="role-type">Dados</div></div>
       <div class="role-pill"><div class="role-dot" style="background:#888780"></div><div class="role-name">Inovação de Produto</div><div class="role-type">Produto</div></div>
       <div class="role-pill"><div class="role-dot" style="background:#888780"></div><div class="role-name">Tech Writer</div><div class="role-type">Documentação</div></div>
+      <div class="role-pill"><div class="role-dot" style="background:#D85A30"></div><div class="role-name">Melhoria Contínua</div><div class="role-type">Meta-aprendizado</div></div>
     </div>
   </div>
 
@@ -258,6 +269,25 @@ DECOMPOSIÇÃO:
       <div class="stack-row"><span class="stack-badge">LiteLLM / PortKey</span><span class="stack-badge">LangSmith (observabilidade)</span></div>
       <div style="font-size:11px; color:var(--color-text-tertiary); padding-top:3px;">Dados</div>
       <div class="stack-row"><span class="stack-badge">BigQuery / Snowflake</span><span class="stack-badge">dbt</span><span class="stack-badge">Metabase</span></div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- APRENDIZADO CONTÍNUO -->
+  <div class="section">
+    <div class="section-title">Círculo de Aprendizado Contínuo</div>
+    <div class="logic-box" style="background: #fdf6e3; border-color: #eee8d5;">
+      <code>DETECÇÃO (QA / SRE)
+  └─ Bug crítico/alto ou Incidente Sev1/2 resolvido
+       └─ ACIONAMENTO: Agente de Melhoria Contínua
+            ├─ Analisa Causa Raiz: "Por que o agente falhou?"
+            ├─ Gera PATCH DE INSTRUÇÃO (Novo checklist ou regra inviolável)
+            └─ VALIDAÇÃO: Tech Leader aprova a mudança no HTML da Role
+                 └─ IMPLEMENTAÇÃO: O agente agora possui o novo conhecimento</code>
+    </div>
+    <div style="font-size:11px; color:var(--color-text-secondary); line-height:1.5; padding: 0 4px;">
+      O aprendizado é imortalizado no repositório. Uma vez que um erro ocorre, o sistema é vacinado contra a repetição desse padrão através da evolução do prompt de sistema do agente responsável.
     </div>
   </div>
 

@@ -1,0 +1,22 @@
+{
+  "platform_name": "DIYAPP - Do It Your APP",
+  "version": "1.0.0",
+  "plan": {
+    "name": "Standard Autônomo",
+    "limits": {
+      "daily_tokens": 500000,
+      "weekly_tokens": 2500000,
+      "monthly_tokens": 10000000
+    },
+    "current_usage": {
+      "daily": 45000,
+      "weekly": 120000,
+      "monthly": 120000
+    },
+    "behavior_on_limit": "hard_stop"
+  },
+  "providers": [
+    { "name": "Claude 3.5 Sonnet", "tokens_used": 85000 },
+    { "name": "Gemini 1.5 Pro", "tokens_used": 35000 }
+  ]
+}
