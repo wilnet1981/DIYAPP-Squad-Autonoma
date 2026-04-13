@@ -1,0 +1,62 @@
+```css
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f9;
+    color: #333;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+header {
+    background-color: #282c34;
+    color: #ffffff;
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+button {
+    background-color: #ff6f61;
+    color: #ffffff;
+    border: none;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #ff8a80;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+}
+
+th, td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.dark-mode {
+    background-color: #333;
+    color: #f4f4f9;
+}
+
+.dark-mode header {
+    background-color: #1c2025;
+}
+
+.dark-mode button {
+    background-color: #444;
+}
+
+.dark-mode table {
+    color: #f4f4f9;
+}
+
+.dark-mode th, .dark-mode td {
+    border-bottom: 1px solid #555;
+}

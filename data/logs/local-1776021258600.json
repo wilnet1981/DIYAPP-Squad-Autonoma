@@ -1,0 +1,32 @@
+[
+  {
+    "timestamp": "2026-04-12T20:28:54.027Z",
+    "message": "[PO] Definiu backlog paralelo com 14 tarefas.",
+    "agent": "Product Owner"
+  },
+  {
+    "timestamp": "2026-04-12T19:36:26.919Z",
+    "message": "SQUAD EM AÇÃO: [Frontend] Editou (0 arq, 0 cmds) - 27148 tokens | [Backend] Editou (0 arq, 0 cmds) - 33348 tokens | [Data Engineer] Editou (0 arq, 0 cmds) - 33420 tokens | [QA] Editou (0 arq, 0 cmds) - 30796 tokens | [Tech Writer] Editou (0 arq, 0 cmds) - 31074 tokens",
+    "agent": "Sprint Ativa (HIVE)"
+  },
+  {
+    "timestamp": "2026-04-12T19:34:44.190Z",
+    "message": "SQUAD EM AÇÃO: [PM] Editou (0 arq, 0 cmds) - 130 tokens | [Tech Leader] Editou (0 arq, 0 cmds) - 28214 tokens | [SRE] Editou (0 arq, 0 cmds) - 28626 tokens | [Segurança] Editou (0 arq, 0 cmds) - 34842 tokens | [UX Designer] Editou (0 arq, 0 cmds) - 22684 tokens",
+    "agent": "Sprint Ativa (HIVE)"
+  },
+  {
+    "timestamp": "2026-04-12T19:33:43.539Z",
+    "message": "[PO] Definiu backlog paralelo com 11 tarefas.",
+    "agent": "Sprint Ativa (HIVE)"
+  },
+  {
+    "timestamp": "2026-04-12T19:30:53.219Z",
+    "message": "[PO] Definiu backlog paralelo com 13 tarefas.",
+    "agent": "Sprint Ativa (HIVE)"
+  },
+  {
+    "timestamp": "2026-04-12T19:22:14.718Z",
+    "message": "[PO] Definiu backlog paralelo com 12 tarefas.",
+    "agent": "Product Owner"
+  }
+]

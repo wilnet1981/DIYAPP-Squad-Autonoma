@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DIYAPP - Administração de Usuários</title>
+<style>
+/* Reset e estilos base */
+* {
+margin: 0;
+padding: 0;
+box-sizing: border-box;
+font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+}
+
+body {
+background-color: #f5f5f5;
+color: #333;
+line-height: 1.6;
+}
+
+/* Container principal */
+.container {
+max-width: 1200px;
+margin: 0 auto;
+padding: 20px;
+}
+
+/* Cabeçalho */
+.header {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-bottom: 30px;
+padding-bottom: 20px;
+border-bottom: 1px solid #e0e0e0;
+}
+
+.header h1 {
+font-size: 24px;
+font-weight: 600;
+color: #2c3e50;
+}
+
+.user-info {
+display: flex;
+align-items: center;
+gap: 10px;
+}
+
+.user-avatar {
+width: 40px;
+height: 40px;
+border-radius: 50%;
+background-color: #3498db;
+color: white;
+display: flex;
+align-items: center;
+justify-content: center;
+font-weight: bold;
+}
+
+/* Botão principal */
+.btn-primary {
+background-color: #3498db;
+color: white;
+border: none;
+padding: 10px 20px;
+border-radius: 6px;
+cursor: pointer;
+font-size: 14px;
+font-weight: 500;
+transition: background-color 0.2s;
+display: flex;
+align-items: center;
+gap: 8px;
+}
+
+.btn-primary:hover {
+background-color: #2980b9;
+}
+
+.btn-primary:active {
+transform: translateY(1px);
+}
+
+/* Tabela de usuários */
+.users-table {
+width: 100%;
+background-color: white;
+border-radius: 8px;
+box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+overflow: hidden;
+}
+
+.table-header {
+display: grid;
+grid-template-columns: 2fr 3fr 2fr 1fr;
+padding: 16px 20px;
+background-color: #f8f9fa;
+font-weight: 600;
+color: #495057;
+border-bottom: 1px solid #e9ecef;
+}
+
+.table-row {
+display: grid;
+grid-template-columns: 2fr 3fr 2fr 1fr;
+padding: 16px 20px;
+border-bottom: 1px solid #e9ecef;
+align-items: center;
+}
+
+.table-row:last-child {
+border-bottom: none;
+}
+
+.table-row:hover {
+background-color: #f8f9fa;
+}
+
+.user-role {
+display: inline-block;
+padding: 4px 12px;
+border-radius: 20px;
+font-size: 12px;
+font-weight: 500;
+}
+
+.role-admin {
+background-color: #e8f4fd;
+color: #3498db;
+}
+
+.role-member {
+background-color: #f0f0f0;
+color: #666;
+}
+
+.actions {
+display: flex;
+gap: 8px;
+}
+
+.btn-icon {
+background: none;
+border: 1px solid #ddd;
+border-radius: 4px;
+padding: 6px 10px;
+cursor: pointer;
+font-size: 12px;
+color: #666;
+transition: all 0.2s;
+}
+
+.btn-icon:hover {
+background-color: #f5f5f5;
+border-color: #ccc;
+}
+
+/* Modal */
+.modal-overlay {
+position: fixed;
+top: 0;
+left: 0;
+right: 0;
+bottom: 0;
+background-color: rgba(0, 0, 0, 0.5);
+display: none;
+justify-content: center;
+align-items: center;
+z-index: 1000;
+animation: fadeIn 0.2s ease-out;
+}
+
+.modal-overlay.active {
+display: flex;
+}
+
+.modal {
+background-color: white;
+border-radius: 8px;
+width: 90%;
+max-width: 500px;
+box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+animation: slideUp 0.3s ease-out;
+}
+
+.modal-header {
+padding: 20px 24px;
+border-bottom: 1px solid #e9ecef;
+display: flex;
+justify-content: space-between;
+align-items: center;
+}
+
+.modal-header h2 {
+font-size: 18px;
+font-weight: 600;
+color: #2c3e50;
+}
+
+.close-btn {
+background: none;
+border: none;
+font-size: 24px;
+color: #95a5a6;
+cursor: pointer;
+line-height: 1;
+padding: 0;
+width: 30px;
+height: 30px;
+display: flex;
+align-items: center;
+justify-content: center;
+border-radius: 4px;
+}
+
+.close-btn:hover {
+background-color: #f5f5f5;
+color: #7f8c8d;
+}
+
+.modal-body {
+padding: 24px;
+}
+
+.form-group {
+margin-bottom: 20px;
+}
+
+.form-group label {
+display: block;
+margin-bottom: 8px;
+font-weight: 500;
+color: #495057;
+font-size: 14px;
+}
+
+.form-control {
+width: 100%;
+padding: 10px 12px;
+border: 1px solid #ddd;
+border-radius: 6px;
+font-size: 14px;
+transition: border-color 0.2s;
+}
+
+.form-control:focus {
+outline: none;
+border-color: #3498db;
+box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.form-hint {
+font-size: 12px;
+color: #95a5a6;
+margin-top: 4px;
+}
+
+.btn-generate-password {
+background-color: #f8f9fa;
+color: #495057;
+border: 1px solid #ddd;
+padding: 10px 16px;
+border-radius: 6px;
+cursor: pointer;
+font-size: 14px;
+font-weight: 500;
+transition: all 0.2s;
+display: flex;
+align-items: center;
+gap: 8px;
+width: 100%;
+justify-content: center;
+}
+
+.btn-generate-password:hover {
+background-color: #e9ecef;
+border-color: #ccc;
+}
+
+.modal-footer {
+padding: 20px 24px;
+border-top: 1px solid #e9ecef;
+display: flex;
+justify-content: flex-end;
+gap: 12px;
+}
+
+.btn-secondary {
+background-color: #f8f9fa;
+color: #495057;
+border: 1px solid #ddd;
+padding: 10px 20px;
+border-radius: 6px;
+cursor: pointer;
+font-size: 14px;
+font-weight: 500;
+transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+background-color: #e9ecef;
+border-color: #ccc;
+}
+
+/* Animações */
+@keyframes fadeIn {
+from { opacity: 0; }
+to { opacity: 1; }
+}
+
+@keyframes slideUp {
+from {
+opacity: 0;
+transform: translateY(20px);
+}
+to {
+opacity: 1;
+transform: translateY(0);
+}
+}
+</style>
+</head>
+<body>
+<div class="container">
+<header class="header">
+<h1>Administração de Usuários</h1>
+<div class="user-info">
+<div class="user-avatar">WM</div>
+<div>
+<div>William Martins</div>
+<div style="font-size: 12px; color: #666;">Administrador</div>
+</div>
+</div>
+</header>
+
+<main>
+<div style="margin-bottom: 20px;">
+<button id="addUserBtn" class="btn-primary">
+<span style="font-size: 18px;">+</span> Adicionar Usuário
+</button>
+</div>
+
+<div class="users-table" id="usersTable">
+<div class="table-header">
+<div>Nome</div>
+<div>Email</div>
+<div>Role</div>
+<div>Ações</div>
+</div>
+<!-- Conteúdo dinâmico -->
+</div>
+</main>
+</div>
+
+<div id="userModal" class="modal-overlay">
+<div class="modal">
+<div class="modal-header">
+<h2 id="modalTitle">Adicionar Novo Usuário</h2>
+<button class="close-btn" onclick="closeModal()">&times;</button>
+</div>
+<div class="modal-body">
+<form id="userForm">
+<div class="form-group">
+<label for="userName">Nome completo *</label>
+<input type="text" id="userName" class="form-control" placeholder="Digite o nome completo" required>
+</div>
+<div class="form-group">
+<label for="userEmail">Email *</label>
+<input type="email" id="userEmail" class="form-control" placeholder="exemplo@email.com" required>
+</div>
+<div class="form-group">
+<button type="button" class="btn-generate-password" onclick="generatePassword()">
+<span>🔐</span> Gerar Senha e Enviar por Email
+</button>
+</div>
+</form>
+</div>
+<div class="modal-footer">
+<button class="btn-secondary" onclick="closeModal()">Cancelar</button>
+<button class="btn-primary" onclick="saveUser()">Salvar Usuário</button>
+</div>
+</div>
+</div>
+
+<script>
+async function loadUsers() {
+    try {
+        const res = await fetch('/api/users');
+        const data = await res.json();
+        const container = document.getElementById('usersTable');
+        
+        let html = `
+            <div class="table-header">
+                <div>Nome</div>
+                <div>Email</div>
+                <div>Role</div>
+                <div>Ações</div>
+            </div>`;
+        
+        data.users.forEach(user => {
+            html += `
+                <div class="table-row">
+                    <div>${user.name}</div>
+                    <div>${user.email}</div>
+                    <div><span class="user-role role-${user.role}">${user.role}</span></div>
+                    <div class="actions">
+                        <button class="btn-icon">Editar</button>
+                        <button class="btn-icon" style="color:red">Excluir</button>
+                    </div>
+                </div>`;
+        });
+        container.innerHTML = html;
+    } catch(e) { console.error(e); }
+}
+
+function openModal() { document.getElementById('userModal').classList.add('active'); }
+function closeModal() { document.getElementById('userModal').classList.remove('active'); }
+
+document.getElementById('addUserBtn').onclick = openModal;
+
+async function saveUser() {
+    const name = document.getElementById('userName').value;
+    const email = document.getElementById('userEmail').value;
+    await fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email })
+    });
+    closeModal();
+    loadUsers();
+}
+
+loadUsers();
+</script>
+</body>
+</html>

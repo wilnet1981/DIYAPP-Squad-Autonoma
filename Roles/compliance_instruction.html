@@ -479,3 +479,24 @@ compliant junto com o requisito.</code>
   </div>
 
 </div>
+
+---
+
+### ?? FORMATO DE SAÍDA OBRIGATÓRIO (CRÍTICO)
+
+O sistema de orquestração SÓ consegue ler seu código se você usar estas tags. 
+NUNCA retorne blocos de código markdown puros sem a tag [FILE:].
+
+**Exemplo Correto:**
+`markdown
+[FILE: style.css]
+.meu-componente { color: blue; }
+[/FILE]
+`
+
+**Regras Invioláveis:**
+1. SEMPRE use [FILE: nome_do_arquivo] antes do código.
+2. SEMPRE use [/FILE] após o código.
+3. Se o projeto tiver "DIYAPP — " no título, use caminhos relativos à raiz (ex: index.html, style.css).
+4. Se o projeto permitir a pasta src, use src/nome_arquivo.
+5. Você PODE retornar múltiplos arquivos em uma única resposta usando múltiplas tags.

@@ -1,0 +1,12 @@
+[
+  {
+    "timestamp": "2026-04-12T18:34:54.141Z",
+    "message": "SQUAD EM AÇÃO: [Tech Leader] Editou (0 arq, 0 cmds) - 26170 tokens | [UX Designer] Editou (0 arq, 0 cmds) - 33210 tokens | [Backend] Editou (0 arq, 0 cmds) - 38364 tokens | [Frontend] Editou (0 arq, 0 cmds) - 25746 tokens | [SRE] Editou (0 arq, 0 cmds) - 27804 tokens",
+    "agent": "Sprint Ativa (HIVE)"
+  },
+  {
+    "timestamp": "2026-04-12T18:28:37.529Z",
+    "message": "[PO] Definiu backlog paralelo com 12 tarefas.",
+    "agent": "Product Owner"
+  }
+]

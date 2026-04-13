@@ -1,0 +1,17 @@
+[
+  {
+    "timestamp": "2026-04-12T19:36:46.672Z",
+    "message": "[PO] Definiu backlog paralelo com 12 tarefas.",
+    "agent": "Sprint Ativa (HIVE)"
+  },
+  {
+    "timestamp": "2026-04-12T19:30:30.834Z",
+    "message": "[PO] Definiu backlog paralelo com 13 tarefas.",
+    "agent": "Sprint Ativa (HIVE)"
+  },
+  {
+    "timestamp": "2026-04-12T19:26:58.666Z",
+    "message": "[PO] Definiu backlog paralelo com 12 tarefas.",
+    "agent": "Product Owner"
+  }
+]

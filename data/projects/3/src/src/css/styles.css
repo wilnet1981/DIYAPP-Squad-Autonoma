@@ -1,0 +1,61 @@
+```css
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #f4f4f9;
+}
+
+header {
+    background: #6c63ff;
+    padding: 20px;
+    color: white;
+    text-align: center;
+}
+
+main {
+    padding: 20px;
+}
+
+#conversation {
+    max-width: 600px;
+    margin: 0 auto;
+    background: white;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+#messages {
+    min-height: 300px;
+    border-bottom: 1px solid #ccc;
+    margin-bottom: 10px;
+    overflow-y: auto;
+}
+
+form {
+    display: flex;
+}
+
+input[type="text"] {
+    flex: 1;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-right: 8px;
+}
+
+button {
+    background: #6c63ff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #5753c9;
+}

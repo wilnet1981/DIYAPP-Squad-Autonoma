@@ -1,0 +1,42 @@
+[
+  {
+    "timestamp": "2026-04-12T22:36:28.019Z",
+    "message": "SQUAD EM AÇÃO: [QA] Editou (0 arq, 0 cmds) - 24866 tokens | [SRE] Editou (0 arq, 0 cmds) - 7966 tokens | [Segurança] Editou (0 arq, 0 cmds) - 19446 tokens | [Tech Writer] Editou (0 arq, 0 cmds) - 53238 tokens | [AI Ops] Editou (0 arq, 0 cmds) - 8846 tokens",
+    "agent": null
+  },
+  {
+    "timestamp": "2026-04-12T22:35:28.502Z",
+    "message": "SQUAD EM AÇÃO: [QA] Editou (0 arq, 0 cmds) - 11606 tokens | [SRE] Editou (0 arq, 0 cmds) - 7516 tokens | [Segurança] Editou (0 arq, 0 cmds) - 27086 tokens | [Tech Writer] Editou (0 arq, 0 cmds) - 40158 tokens | [AI Ops] Editou (0 arq, 0 cmds) - 10808 tokens",
+    "agent": null
+  },
+  {
+    "timestamp": "2026-04-12T22:33:00.522Z",
+    "message": "PROJETO FINALIZADO COM SUCESSO.",
+    "agent": "Sprint Ativa (HIVE)"
+  },
+  {
+    "timestamp": "2026-04-12T22:32:14.445Z",
+    "message": "SQUAD EM AÇÃO: [QA] Editou (0 arq, 0 cmds) - 8064 tokens | [SRE] Editou (0 arq, 0 cmds) - 9318 tokens | [Segurança] Editou (0 arq, 0 cmds) - 10080 tokens | [Tech Writer] Editou (0 arq, 0 cmds) - 7176 tokens | [AI Ops] Editou (0 arq, 0 cmds) - 8896 tokens",
+    "agent": "Sprint Ativa (HIVE)"
+  },
+  {
+    "timestamp": "2026-04-12T22:31:51.782Z",
+    "message": "SQUAD EM AÇÃO: [PM] Editou (0 arq, 0 cmds) - 940 tokens | [UX Designer] Editou (0 arq, 0 cmds) - 22454 tokens | [Tech Leader] Editou (0 arq, 0 cmds) - 38832 tokens | [Frontend] Editou (0 arq, 0 cmds) - 19926 tokens | [Backend] Editou (0 arq, 0 cmds) - 125398 tokens",
+    "agent": "Sprint Ativa (HIVE)"
+  },
+  {
+    "timestamp": "2026-04-12T22:30:50.479Z",
+    "message": "SQUAD EM AÇÃO: [PM] Editou (0 arq, 0 cmds) - 828 tokens | [UX Designer] Editou (0 arq, 0 cmds) - 5524 tokens | [Tech Leader] Editou (0 arq, 0 cmds) - 21670 tokens | [Frontend] Editou (0 arq, 0 cmds) - 40464 tokens | [Backend] Editou (0 arq, 0 cmds) - 9158 tokens",
+    "agent": "Sprint Ativa (HIVE)"
+  },
+  {
+    "timestamp": "2026-04-12T22:29:07.629Z",
+    "message": "SQUAD EM AÇÃO: [PM] Editou (0 arq, 0 cmds) - 1204 tokens | [UX Designer] Editou (0 arq, 0 cmds) - 38778 tokens | [Tech Leader] Editou (0 arq, 0 cmds) - 22440 tokens | [Frontend] Editou (0 arq, 0 cmds) - 38146 tokens | [Backend] Editou (0 arq, 0 cmds) - 68626 tokens",
+    "agent": "Sprint Ativa (HIVE)"
+  },
+  {
+    "timestamp": "2026-04-12T22:26:37.162Z",
+    "message": "[PO] Iniciando via openai.",
+    "agent": "Product Owner"
+  }
+]

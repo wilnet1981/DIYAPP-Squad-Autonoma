@@ -1,0 +1,202 @@
+/* Reset e estilos base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    background-color: #f5f7fa;
+    color: #333;
+    line-height: 1.6;
+    padding: 20px;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 40px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #e1e8ed;
+}
+
+header h1 {
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+header p {
+    color: #7f8c8d;
+    font-size: 1.1rem;
+}
+
+/* Seções de teste */
+.test-section {
+    background: white;
+    border-radius: 10px;
+    padding: 25px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e1e8ed;
+}
+
+.test-section h2 {
+    color: #34495e;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px dashed #bdc3c7;
+}
+
+/* Container da Guia Operacional */
+.tab-container {
+    display: flex;
+    border-bottom: 2px solid #ecf0f1;
+    margin-bottom: 20px;
+}
+
+.tab {
+    padding: 12px 24px;
+    background-color: #ecf0f1;
+    color: #7f8c8d;
+    border-radius: 8px 8px 0 0;
+    margin-right: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    border-bottom: none;
+}
+
+.tab-icon {
+    margin-right: 8px;
+    font-size: 1.1rem;
+}
+
+/* *** ALTERAÇÃO SOLICITADA: Guia Operacional Ativa *** */
+/* A guia ativa "Guia Operacional" deve ter fundo verde e texto branco */
+#nav-docs.active {
+    background-color: #2ecc71 !important; /* Verde */
+    color: white !important;
+    font-weight: 600;
+    border-color: #27ae60;
+}
+
+.tab-content {
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 0 0 8px 8px;
+    border: 1px solid #e1e8ed;
+    border-top: none;
+}
+
+/* Container dos Botões */
+.button-container {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.nav-button {
+    padding: 12px 28px;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 120px;
+}
+
+/* Botões padrão (Voltar, Cancelar) */
+.nav-button {
+    background-color: #3498db;
+    color: white;
+}
+
+.nav-button:hover {
+    background-color: #2980b9;
+    transform: translateY(-2px);
+}
+
+/* *** ALTERAÇÃO SOLICITADA: Botão Avançar Específico *** */
+/* Apenas o botão com id "btn-avancar" deve ser verde com texto branco */
+#btn-avancar {
+    background-color: #2ecc71 !important; /* Verde */
+    color: white !important;
+}
+
+#btn-avancar:hover {
+    background-color: #27ae60 !important;
+    transform: translateY(-2px);
+}
+
+.instruction {
+    font-style: italic;
+    color: #7f8c8d;
+    background-color: #f8f9fa;
+    padding: 10px 15px;
+    border-radius: 6px;
+    border-left: 4px solid #3498db;
+}
+
+/* Instruções de validação */
+ol {
+    padding-left: 25px;
+    margin-bottom: 20px;
+}
+
+ol li {
+    margin-bottom: 10px;
+    padding-left: 5px;
+}
+
+.color-swatch {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.swatch {
+    width: 50px;
+    height: 50px;
+    border-radius: 6px;
+    border: 2px solid #ddd;
+}
+
+footer {
+    text-align: center;
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 2px solid #e1e8ed;
+    color: #95a5a6;
+    font-size: 0.9rem;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    .tab-container {
+        flex-direction: column;
+    }
+
+    .tab {
+        margin-right: 0;
+        margin-bottom: 5px;
+        border-radius: 8px;
+    }
+
+    .button-container {
+        flex-direction: column;
+    }
+
+    .nav-button {
+        width: 100%;
+    }
+}

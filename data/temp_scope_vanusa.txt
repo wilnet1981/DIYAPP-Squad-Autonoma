@@ -1,0 +1,45 @@
+ESCOPO DO PROJETO — ASSISTENTE WHATSAPP
+Vanusa Gràndo Mentoria
+
+1. Objetivo
+Desenvolver um assistente automatizado via WhatsApp para:
+- Apresentar e explicar produtos da Vanusa Gràndo Mentoria
+- Identificar e classificar usuários (lead vs cliente)
+- Qualificar leads para conversão
+- Atender clientes com base nos produtos contratados
+- Direcionar clientes para conteúdos relevantes (ex: vídeos, aulas, materiais)
+- Integrar com a plataforma LearnWorlds para acesso a conteúdos da mentoria
+
+2. Escopo Funcional
+2.1. Entrada e Identificação do Usuário
+O assistente deve:
+Capturar informações iniciais (Nome, Email, Telefone)
+Identificar: Lead (não cliente) vs Cliente ativo
+
+2.2. Fluxo para Leads
+Apresentar produtos: Mentoria de Carreira, Realocação.
+Qualificação: Cargo, Exp, Objetivo, Urgência.
+Encaminhamento: Contato humano ou página de vendas.
+
+2.3. Fluxo para Clientes
+Identificar produtos adquiridos.
+Acessar conteúdos LearnWorlds (Cover Letter, Módulos, etc).
+Responder dúvidas baseado no conteúdo.
+
+2.4. Integração com LearnWorlds
+Geração de links de acesso e busca via API.
+
+3. Requisitos Técnicos
+WhatsApp, API LearnWorlds, CRM.
+
+5. Regras de Negócio
+Lead nunca acessa conteúdo exclusivo.
+Cliente só acessa conteúdo do que comprou.
+Sempre que necessário, escalar para humano.
+
+7. Fases do Projeto
+Fase 1 — Descoberta
+Fase 2 — Integração
+Fase 3 — Construção
+Fase 4 — Testes
+Fase 5 — Deploy

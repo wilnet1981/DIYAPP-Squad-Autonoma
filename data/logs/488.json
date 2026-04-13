@@ -1,0 +1,32 @@
+[
+  {
+    "timestamp": "2026-04-12T23:13:27.414Z",
+    "message": "SQUAD EM AÇÃO: [Segurança] Editou (0 arq, 0 cmds) - 116834 tokens | [Compliance] Editou (0 arq, 0 cmds) - 34488 tokens | [Data Engineer] Editou (0 arq, 0 cmds) - 20130 tokens | [Tech Writer] Editou (0 arq, 0 cmds) - 20282 tokens | [AI Ops] Editou (0 arq, 0 cmds) - 10252 tokens",
+    "agent": null
+  },
+  {
+    "timestamp": "2026-04-12T23:10:01.039Z",
+    "message": "PROJETO FINALIZADO COM SUCESSO.",
+    "agent": "Sprint Ativa (HIVE)"
+  },
+  {
+    "timestamp": "2026-04-12T23:09:41.313Z",
+    "message": "SQUAD EM AÇÃO: [Segurança] Editou (0 arq, 0 cmds) - 9484 tokens | [Compliance] Editou (0 arq, 0 cmds) - 7930 tokens | [Data Engineer] Editou (0 arq, 0 cmds) - 7982 tokens | [Tech Writer] Editou (0 arq, 0 cmds) - 7672 tokens | [AI Ops] Editou (0 arq, 0 cmds) - 8634 tokens",
+    "agent": "Sprint Ativa (HIVE)"
+  },
+  {
+    "timestamp": "2026-04-12T23:07:41.346Z",
+    "message": "SQUAD EM AÇÃO: [UX Designer] Editou (0 arq, 0 cmds) - 7454 tokens | [Frontend] Editou (0 arq, 0 cmds) - 7390 tokens | [Backend] Editou (0 arq, 0 cmds) - 9508 tokens | [Tech Leader] Editou (0 arq, 0 cmds) - 8006 tokens | [QA] Editou (0 arq, 0 cmds) - 7028 tokens",
+    "agent": "Sprint Ativa (HIVE)"
+  },
+  {
+    "timestamp": "2026-04-12T23:06:36.016Z",
+    "message": "[PO] Iniciando via openai.",
+    "agent": "Sprint Ativa (HIVE)"
+  },
+  {
+    "timestamp": "2026-04-12T23:06:02.634Z",
+    "message": "[PO] Iniciando via mistral.",
+    "agent": "Product Owner"
+  }
+]

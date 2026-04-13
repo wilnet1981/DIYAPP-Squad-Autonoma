@@ -1,0 +1,17 @@
+[
+  {
+    "timestamp": "2026-04-12T18:23:21.256Z",
+    "message": "SQUAD EM AÇÃO: [QA] Editou (0 arq, 0 cmds) - 30092 tokens | [Inovação] Editou (0 arq, 0 cmds) - 31394 tokens",
+    "agent": "Sprint Ativa (HIVE)"
+  },
+  {
+    "timestamp": "2026-04-12T18:17:46.696Z",
+    "message": "SQUAD EM AÇÃO: [SRE] Editou (0 arq, 0 cmds) - 27502 tokens | [AI Ops] Editou (0 arq, 0 cmds) - 30598 tokens | [Segurança] Editou (0 arq, 0 cmds) - 28086 tokens | [Compliance] Editou (0 arq, 0 cmds) - 29322 tokens | [Tech Writer] Editou (0 arq, 0 cmds) - 34738 tokens",
+    "agent": "Sprint Ativa (HIVE)"
+  },
+  {
+    "timestamp": "2026-04-12T18:12:36.745Z",
+    "message": "[PO] Definiu backlog paralelo com 12 tarefas.",
+    "agent": "Product Owner"
+  }
+]

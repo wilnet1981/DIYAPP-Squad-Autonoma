@@ -1,0 +1,27 @@
+[
+  {
+    "timestamp": "2026-04-12T17:46:30.746Z",
+    "message": "SQUAD EM AÇÃO: [Compliance] Editou (0 arq, 0 cmds) - 32692 tokens | [Inovação] Editou (0 arq, 0 cmds) - 32706 tokens",
+    "agent": "Sprint Ativa (HIVE)"
+  },
+  {
+    "timestamp": "2026-04-12T17:35:50.866Z",
+    "message": "SQUAD EM AÇÃO: [Data Engineer] Editou (0 arq, 0 cmds) - 27010 tokens | [Segurança] Editou (0 arq, 0 cmds) - 28330 tokens | [AI Ops] Editou (0 arq, 0 cmds) - 40610 tokens | [QA] Editou (0 arq, 0 cmds) - 28656 tokens | [Tech Writer] Editou (0 arq, 0 cmds) - 34348 tokens",
+    "agent": "Sprint Ativa (HIVE)"
+  },
+  {
+    "timestamp": "2026-04-12T17:34:28.455Z",
+    "message": "SQUAD EM AÇÃO: [Tech Leader] Editou (0 arq, 0 cmds) - 29708 tokens | [UX Designer] Editou (0 arq, 0 cmds) - 30900 tokens | [Backend] Editou (0 arq, 0 cmds) - 31858 tokens | [Frontend] Editou (0 arq, 0 cmds) - 29340 tokens | [SRE] Editou (0 arq, 0 cmds) - 28068 tokens",
+    "agent": "Sprint Ativa (HIVE)"
+  },
+  {
+    "timestamp": "2026-04-12T17:32:57.924Z",
+    "message": "SQUAD EM AÇÃO: [Tech Leader] Editou (0 arq, 0 cmds) - 27864 tokens | [UX Designer] Editou (0 arq, 0 cmds) - 32462 tokens | [Backend] Editou (0 arq, 0 cmds) - 31744 tokens | [Frontend] Editou (0 arq, 0 cmds) - 28510 tokens | [SRE] Editou (0 arq, 0 cmds) - 27074 tokens",
+    "agent": "Sprint Ativa (HIVE)"
+  },
+  {
+    "timestamp": "2026-04-12T17:29:51.531Z",
+    "message": "[PO] Definiu backlog paralelo com 12 tarefas.",
+    "agent": "Product Owner"
+  }
+]
