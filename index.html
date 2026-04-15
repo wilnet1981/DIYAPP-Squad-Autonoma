@@ -69,14 +69,69 @@
             </section>
         </div>
 
-        <div id="view-softwares" class="view"></div>
-        <div id="view-billing" class="view"></div>
+        <!-- MEUS SOFTWARES -->
+        <div id="view-softwares" class="view">
+            <h2 class="section-title">Meus Softwares</h2>
+            <div id="software-list" class="agent-grid"></div>
+        </div>
+
+        <!-- FATURAMENTO -->
+        <div id="view-billing" class="view">
+            <h2 class="section-title">Faturamento & Uso de Tokens</h2>
+            <div style="display:grid; grid-template-columns:1fr 300px; gap:24px; margin-bottom:24px;">
+                <div style="background:var(--bg-glass); border:1px solid var(--border-color); border-radius:12px; overflow:auto;">
+                    <table style="width:100%; border-collapse:collapse; font-size:12px;">
+                        <thead>
+                            <tr style="border-bottom:1px solid var(--border-color); color:var(--text-secondary); text-transform:uppercase; font-size:10px;">
+                                <th style="padding:12px 16px; text-align:left;">Projeto</th>
+                                <th style="padding:12px 8px;">Status</th>
+                                <th style="padding:12px 8px;">Cloudflare</th>
+                                <th style="padding:12px 8px;">Groq</th>
+                                <th style="padding:12px 8px;">Mistral</th>
+                                <th style="padding:12px 8px;">DeepSeek</th>
+                                <th style="padding:12px 8px;">Gemini</th>
+                                <th style="padding:12px 8px;">OpenAI</th>
+                                <th style="padding:12px 8px;">Anthropic</th>
+                                <th style="padding:12px 8px;">Total Tokens</th>
+                                <th style="padding:12px 8px;">Custo</th>
+                            </tr>
+                        </thead>
+                        <tbody id="billing-body"></tbody>
+                    </table>
+                </div>
+                <div style="background:var(--bg-glass); border:1px solid var(--border-color); border-radius:12px; padding:20px;">
+                    <div style="font-size:11px; color:var(--text-secondary); text-transform:uppercase; margin-bottom:12px;">Distribuição por LLM</div>
+                    <div style="height:220px; position:relative;"><canvas id="llm-pie-chart"></canvas></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AUDITORIA -->
         <div id="view-audit" class="view">
             <h2 class="section-title">Auditoria & Transparência</h2>
             <div id="audit-feed" style="background: var(--bg-glass); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; font-family: monospace; font-size: 12px; height: 600px; overflow-y: auto;"></div>
         </div>
-        <div id="view-stability" class="view"></div>
-        <div id="view-factory" class="view"></div>
+
+        <!-- ESTABILIDADE -->
+        <div id="view-stability" class="view">
+            <h2 class="section-title">Estabilidade do Sistema</h2>
+            <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:24px;">
+                <div class="quota-card"><div class="quota-label"><span>Latência Média</span></div><div id="stat-latency" style="font-size:28px; font-weight:800; color:var(--accent-success); margin-top:8px;">--</div><div style="font-size:11px; color:var(--text-secondary);">ms</div></div>
+                <div class="quota-card"><div class="quota-label"><span>Uptime</span></div><div id="stat-uptime" style="font-size:28px; font-weight:800; color:var(--accent-success); margin-top:8px;">--</div><div style="font-size:11px; color:var(--text-secondary);">horas</div></div>
+                <div class="quota-card"><div class="quota-label"><span>Status</span></div><div id="stat-status" style="font-size:16px; font-weight:800; color:var(--accent-success); margin-top:8px;">IDLE</div><div style="font-size:11px; color:var(--text-secondary);">orquestrador</div></div>
+            </div>
+            <div style="background:var(--bg-glass); border:1px solid var(--border-color); border-radius:12px; padding:20px;">
+                <div style="font-size:11px; color:var(--text-secondary); text-transform:uppercase; margin-bottom:16px;">Latência do Orquestrador (ms)</div>
+                <div style="height:250px; position:relative;"><canvas id="latency-chart"></canvas></div>
+            </div>
+        </div>
+
+        <!-- SQUAD FACTORY -->
+        <div id="view-factory" class="view">
+            <h2 class="section-title">Squad Factory</h2>
+            <div id="factory-grid" class="agent-grid"></div>
+        </div>
+
         <div id="view-doc-viewer" class="view"></div>
     </main>
 
@@ -121,7 +176,7 @@
 
     <div id="chat-modal" class="modal" style="display:none;">
         <div class="modal-content" style="width: 700px; height: 600px; display: flex; flex-direction: column;">
-            <div class="modal-header"><h3>Briefing com a Squad</h3><span class="close" id="close-modal">&times;</span></div>
+            <div class="modal-header"><h3>Briefing com a Squad</h3><button id="close-modal" style="background:none; border:none; color:var(--text-secondary); font-size:22px; cursor:pointer; line-height:1; padding:0 4px;">&times;</button></div>
             <div id="chat-box" class="chat-container" style="flex: 1; overflow-y: auto;"></div>
             
             <div id="attachment-preview" style="display:none; padding:12px; gap:10px; flex-wrap:wrap; background:rgba(0,0,0,0.2); border-top:1px solid var(--border-color);"></div>
@@ -135,6 +190,7 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <script src="app_final_v7.js"></script>
 </body>
 </html>

@@ -345,7 +345,7 @@ function renderFactory() {
                     ${isActive ? 'ATIVO AGORA' : 'STANDBY'}
                 </div>
             </div>
-            <div class="agent-tag">${a.category}</div>
+            <div class="agent-tag">${a.role || a.category || ''}</div>
             <div class="agent-desc">${a.desc || 'Especialista sênior em autonomia de sistemas.'}</div>
             
             <div style="margin-top:15px; display:grid; grid-template-columns: 1fr 1fr; gap:10px; border-top:1px solid #30363d; padding-top:12px;">
@@ -596,21 +596,24 @@ function renderBilling(billingData) {
     body.innerHTML = '';
     
     const projects = billingData.projects || {};
-    const totals = billingData.totals || { deepseek: 0, mistral: 0, gemini: 0, openai: 0, claude: 0 };
-    
+    const totals = billingData.totals || { cloudflare: 0, groq: 0, mistral: 0, deepseek: 0, gemini: 0, openai: 0, anthropic: 0 };
+
     Object.keys(projects).forEach(title => {
         const p = projects[title];
+        const b = p.breakdown || {};
         const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td>${title}</td>
-            <td><span class="status-tag status-done">ATIVA</span></td>
-            <td>${(p.breakdown.deepseek || 0).toLocaleString()}</td>
-            <td>${(p.breakdown.mistral || 0).toLocaleString()}</td>
-            <td>${(p.breakdown.gemini || 0).toLocaleString()}</td>
-            <td>${(p.breakdown.openai || 0).toLocaleString()}</td>
-            <td>${(p.breakdown.claude || 0).toLocaleString()}</td>
-            <td style="font-weight: 700; color: #1D9E75;">${(p.tokens || 0).toLocaleString()}</td>
-            <td style="font-weight: 700; color: #238636;">$${(p.cost || 0).toFixed(2)}</td>
+            <td style="padding:10px 16px;">${title}</td>
+            <td style="padding:10px 8px; text-align:center;"><span class="status-tag status-done">ATIVA</span></td>
+            <td style="padding:10px 8px; text-align:center;">${(b.cloudflare || 0).toLocaleString()}</td>
+            <td style="padding:10px 8px; text-align:center;">${(b.groq || 0).toLocaleString()}</td>
+            <td style="padding:10px 8px; text-align:center;">${(b.mistral || 0).toLocaleString()}</td>
+            <td style="padding:10px 8px; text-align:center;">${(b.deepseek || 0).toLocaleString()}</td>
+            <td style="padding:10px 8px; text-align:center;">${(b.gemini || 0).toLocaleString()}</td>
+            <td style="padding:10px 8px; text-align:center;">${(b.openai || 0).toLocaleString()}</td>
+            <td style="padding:10px 8px; text-align:center;">${(b.anthropic || 0).toLocaleString()}</td>
+            <td style="padding:10px 8px; text-align:center; font-weight:700; color:#1D9E75;">${(p.tokens || 0).toLocaleString()}</td>
+            <td style="padding:10px 8px; text-align:center; font-weight:700; color:#238636;">$${(p.cost || 0).toFixed(2)}</td>
         `;
         body.appendChild(tr);
     });
@@ -623,10 +626,10 @@ function renderLLMChart(data) {
     const ctx = document.getElementById('llm-pie-chart');
     if (!ctx) return;
     const chartData = {
-        labels: ['DeepSeek', 'Mistral', 'Gemini', 'OpenAI', 'Claude'],
+        labels: ['Cloudflare', 'Groq', 'Mistral', 'DeepSeek', 'Gemini', 'OpenAI', 'Anthropic'],
         datasets: [{
-            data: [data.deepseek, data.mistral, data.gemini, data.openai, data.claude],
-            backgroundColor: ['#1D9E75', '#FF8C00', '#0078D4', '#6B3FA0', '#D43F3F'],
+            data: [data.cloudflare, data.groq, data.mistral, data.deepseek, data.gemini, data.openai, data.anthropic],
+            backgroundColor: ['#F6821F', '#F55036', '#FF8C00', '#1D9E75', '#0078D4', '#6B3FA0', '#D43F3F'],
             borderWidth: 0
         }]
     };
@@ -785,7 +788,7 @@ function setupEventListeners() {
     bindClick('nav-audit',      () => switchView('view-audit'));
     bindClick('nav-stability',  () => switchView('view-stability'));
     bindClick('btn-new-app',    () => { document.getElementById('chat-modal').style.display = 'flex'; startInterview(); });
-    bindClick('nav-docs',       () => { document.getElementById('chat-modal').style.display = 'flex'; startInterview(); });
+    bindClick('nav-docs',       () => switchView('view-doc-viewer'));
     bindClick('close-modal',    () => { document.getElementById('chat-modal').style.display = 'none'; currentInterviewStage = 'start'; });
     bindClick('btn-send',       () => sendChatMessage());
     bindClick('btn-unlock-system', () => unlockSystem());
@@ -793,7 +796,10 @@ function setupEventListeners() {
     
     // NEW: Attachment Button Logic
     bindClick('btn-attach',     () => document.getElementById('chat-file').click());
-    
+
+    const chatInput = document.getElementById('chat-input');
+    if (chatInput) chatInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChatMessage(); } });
+
     const fileInput = document.getElementById('chat-file');
     if (fileInput) fileInput.onchange = (e) => handleFileUpload(e.target.files);
 }
