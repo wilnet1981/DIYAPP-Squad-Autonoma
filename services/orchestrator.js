@@ -1,6 +1,7 @@
 const aiService = require('./ai_service');
 const store = require('./store');
 const billing = require('./billing_service');
+const auditTrail = require('./audit_trail');
 const fs = require('fs');
 const path = require('path');
 const shell = require('shelljs');
@@ -421,6 +422,16 @@ REGRAS:
             aiResult.reply = aiResult.reply.replace(/\[FILE:[^\]]+\][\s\S]+?\[\/FILE\]/g, '').replace(/\[PATCH:[^\]]+\][\s\S]+?\[\/PATCH\]/g, '').trim();
             console.log(`[QA] Resposta: ${aiResult.reply.substring(0, 80)}...`);
 
+            auditTrail.log({
+                projectId: project.Id,
+                projectTitle: project.Title,
+                phase: 'QA',
+                actor: 'QA (Analise)',
+                action: 'Auditoria de qualidade do ciclo',
+                result: aiResult.reply.includes('[STATUS: CLEAN]') ? 'OK' : 'FAIL',
+                detail: aiResult.reply.substring(0, 200)
+            });
+
             if (aiResult.reply.includes('[STATUS: CLEAN]')) {
                 // Antes de aceitar CLEAN: verificar se algo foi realmente escrito no staging
                 const stagingPath = path.join(__dirname, '../data/staging', project.Id.toString());
@@ -649,7 +660,17 @@ Retorne JSON: [BACKLOG: {"tasks": [{"agent": "Backend", "desc": "..."}]}]`;
             const stamped = tasks.map(t => ({ ...t, status: 'PENDING' }));
             saveLocalBacklog(project.Id, stamped);
             console.log(`[GOVERNANÇA] Backlog extraído: ${stamped.length} tarefa(s). Bloqueando para revisão.`);
-            
+
+            auditTrail.log({
+                projectId: project.Id,
+                projectTitle: project.Title,
+                phase: 'PLANEJAMENTO',
+                actor: 'PO',
+                action: `Backlog criado com ${stamped.length} tarefa(s)`,
+                result: 'OK',
+                detail: stamped.map(t => `[${t.agent}] ${t.desc?.substring(0, 100)}`).join(' | ')
+            });
+
             const nextStatus = isStepByStepEnabled() ? 'AWAITING_STEP_APPROVAL' : 'AWAITING_APPROVAL';
             await store.updateProject(project.Id, {
                 Backlog: JSON.stringify(stamped),
@@ -660,6 +681,15 @@ Retorne JSON: [BACKLOG: {"tasks": [{"agent": "Backend", "desc": "..."}]}]`;
             return;
         } else {
             console.error('[PO] Não foi possível extrair tarefas da resposta do PO. Tentando novamente no próximo tick.');
+            auditTrail.log({
+                projectId: project.Id,
+                projectTitle: project.Title,
+                phase: 'PLANEJAMENTO',
+                actor: 'PO',
+                action: 'Falha ao extrair tarefas da resposta',
+                result: 'FAIL',
+                detail: `Resposta recebida (primeiros 150 chars): ${aiResult.reply.substring(0, 150)}`
+            });
         }
     }
 
@@ -836,7 +866,15 @@ Verifique se a mudança descrita na TAREFA está presente nos arquivos acima.`;
                     if (!verdict || verdict[1].toUpperCase().startsWith('FAIL')) {
                         const reason = verdict ? verdict[1] : 'sem veredito estruturado';
                         console.error(`[VERIFIER] ❌ Verificação FALHOU para [${task.agent}]: ${reason}`);
-                        // Reverte arquivos do staging — a mudança não foi validada
+                        auditTrail.log({
+                            projectId: project.Id,
+                            projectTitle: project.Title,
+                            phase: 'VERIFICAÇÃO',
+                            actor: 'Verificador de Código',
+                            action: `Revisão da tarefa [${task.agent}]: ${task.desc?.substring(0, 80)}`,
+                            result: 'FAIL',
+                            detail: `Veredito: ${reason.substring(0, 200)}`
+                        });
                         for (const fname of changedFiles) {
                             const staged = path.join(stagingPath, fname);
                             if (fs.existsSync(staged)) {
@@ -848,8 +886,29 @@ Verifique se a mudança descrita na TAREFA está presente nos arquivos acima.`;
                         task.failReason = reason;
                     } else {
                         console.log(`[VERIFIER] ✅ Verificado OK: ${changedFiles.join(', ')}`);
+                        auditTrail.log({
+                            projectId: project.Id,
+                            projectTitle: project.Title,
+                            phase: 'VERIFICAÇÃO',
+                            actor: 'Verificador de Código',
+                            action: `Revisão da tarefa [${task.agent}]: ${task.desc?.substring(0, 80)}`,
+                            result: 'OK',
+                            detail: `Arquivos validados: ${changedFiles.join(', ')}`
+                        });
                     }
                 }
+
+                auditTrail.log({
+                    projectId: project.Id,
+                    projectTitle: project.Title,
+                    phase: 'EXECUÇÃO',
+                    actor: task.agent,
+                    action: task.desc?.substring(0, 120),
+                    result: (verifiedFiles.length > 0 || fileCount > 0 || cmdCount > 0) ? 'OK' : 'FAIL',
+                    detail: verifiedFiles.length > 0
+                        ? `Arquivos alterados: ${verifiedFiles.join(', ')}`
+                        : (task.failReason ? `Motivo: ${task.failReason.substring(0, 150)}` : 'Nenhum arquivo alterado')
+                });
 
                 if (verifiedFiles.length > 0 || fileCount > 0 || cmdCount > 0) {
                     task.status = 'DONE';
@@ -1540,6 +1599,15 @@ async function finalizeProjectDeploy(project) {
         if (github.isConfigured()) {
             try {
                 const { prUrl, prNumber, branchName } = await github.createPRFromStaging(project.Id, project.Title, stagingPath);
+                auditTrail.log({
+                    projectId: project.Id,
+                    projectTitle: project.Title,
+                    phase: 'DEPLOY',
+                    actor: 'GitHub',
+                    action: `PR criada: #${prNumber} na branch ${branchName}`,
+                    result: 'OK',
+                    detail: prUrl
+                });
                 await store.updateProject(project.Id, {
                     Status: 'AWAITING_DEPLOY_APPROVAL',
                     PR_URL: prUrl,
@@ -1550,6 +1618,15 @@ async function finalizeProjectDeploy(project) {
                 return;
             } catch (e) {
                 console.error(`[META-DEPLOY] Falha ao criar PR: ${e.message}.`);
+                auditTrail.log({
+                    projectId: project.Id,
+                    projectTitle: project.Title,
+                    phase: 'DEPLOY',
+                    actor: 'GitHub',
+                    action: 'Falha ao criar PR',
+                    result: 'FAIL',
+                    detail: e.message
+                });
                 await store.updateProject(project.Id, {
                     Status: 'IN_PROGRESS',
                     Active_Agent: 'Sprint Ativa (HIVE)',

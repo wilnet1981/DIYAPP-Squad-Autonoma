@@ -212,58 +212,90 @@ function renderStabilityMonitor() {
     }, 5000); 
 }
 
+const PHASE_COLORS = {
+    BRIEFING:     { bg: 'rgba(88,166,255,0.08)',  border: 'rgba(88,166,255,0.25)',  text: '#58a6ff' },
+    PLANEJAMENTO: { bg: 'rgba(210,153,34,0.08)',  border: 'rgba(210,153,34,0.25)',  text: '#d99622' },
+    EXECUÇÃO:     { bg: 'rgba(63,185,80,0.08)',   border: 'rgba(63,185,80,0.25)',   text: '#3fb950' },
+    VERIFICAÇÃO:  { bg: 'rgba(247,120,186,0.08)', border: 'rgba(247,120,186,0.25)', text: '#f778ba' },
+    QA:           { bg: 'rgba(139,148,158,0.08)', border: 'rgba(139,148,158,0.25)', text: '#8b949e' },
+    DEPLOY:       { bg: 'rgba(188,140,255,0.08)', border: 'rgba(188,140,255,0.25)', text: '#bc8cff' },
+};
+
+const RESULT_ICON = { OK: '✅', FAIL: '❌', SKIP: '⏭️', PENDING: '⏳' };
+
 async function fetchAuditLogs() {
     try {
-        const [auditRes, evidenceRes] = await Promise.all([
-            fetch('/api/audit'),
+        const [trailRes, evidenceRes] = await Promise.all([
+            fetch('/api/trail'),
             fetch('/api/evidence')
         ]);
-        const logs = await auditRes.json();
+        const trail = await trailRes.json();
         const evidence = await evidenceRes.json();
         const feed = document.getElementById('audit-feed');
         if (!feed) return;
 
-        // Render evidence at top with expandable file snippets
-        const evidenceHtml = evidence.length > 0 ? `
-            <div style="margin-bottom:16px;">
-                <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:#1D9E75; margin-bottom:8px;">✅ Evidências de Execução Real</div>
-                ${evidence.map(ev => `
-                    <div style="background:rgba(29,158,117,0.07); border:1px solid rgba(29,158,117,0.2); border-radius:6px; padding:10px 12px; margin-bottom:6px; font-size:12px;">
-                        <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
-                            <strong style="color:#c9d1d9;">[${ev.agent}]</strong>
-                            <span style="color:#8b949e; font-size:11px;">${new Date(ev.ts).toLocaleString()}</span>
+        // — Seção: Trail completo (por fase) —
+        let trailHtml = '';
+        if (trail.length === 0) {
+            trailHtml = '<div style="color:#8b949e; padding:16px 0;">Nenhuma atividade registrada ainda. Inicie um ciclo para ver o trail completo.</div>';
+        } else {
+            // Agrupa por projeto
+            const byProject = {};
+            trail.forEach(e => {
+                const key = e.projectId;
+                if (!byProject[key]) byProject[key] = { title: e.projectTitle, entries: [] };
+                byProject[key].entries.push(e);
+            });
+
+            trailHtml = Object.values(byProject).map(proj => {
+                const entriesHtml = proj.entries.map(e => {
+                    const c = PHASE_COLORS[e.phase] || PHASE_COLORS['EXECUÇÃO'];
+                    const icon = RESULT_ICON[e.result] || '⏳';
+                    const time = new Date(e.ts).toLocaleTimeString('pt-BR');
+                    return `
+                        <div style="display:grid; grid-template-columns:70px 90px 110px 1fr; gap:8px; align-items:start; padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.04); font-size:11px;">
+                            <span style="color:#8b949e;">${time}</span>
+                            <span style="background:${c.bg}; border:1px solid ${c.border}; color:${c.text}; border-radius:4px; padding:1px 6px; text-align:center; font-weight:700; font-size:10px;">${e.phase}</span>
+                            <span style="color:#c9d1d9; font-weight:600;">${icon} ${e.actor}</span>
+                            <span style="color:#8b949e;">${e.action}${e.detail ? `<br><span style="color:#6e7681; font-size:10px;">↳ ${e.detail}</span>` : ''}</span>
+                        </div>`;
+                }).join('');
+
+                return `
+                    <div style="margin-bottom:20px;">
+                        <div style="font-size:11px; font-weight:700; color:#c9d1d9; text-transform:uppercase; letter-spacing:.06em; margin-bottom:8px; padding-bottom:4px; border-bottom:1px solid rgba(255,255,255,0.1);">
+                            📋 ${proj.title}
                         </div>
-                        <div style="color:#c9d1d9; margin-bottom:4px;">${ev.taskDesc?.substring(0, 100)}</div>
-                        ${ev.filesChanged && ev.filesChanged.length > 0
-                            ? `<div style="color:#1D9E75; font-size:11px;">📁 ${ev.filesChanged.join(', ')}</div>`
-                            : '<div style="color:#f778ba; font-size:11px;">⚠️ Nenhum arquivo alterado</div>'
-                        }
+                        ${entriesHtml}
+                    </div>`;
+            }).join('');
+        }
+
+        // — Seção: Evidências de arquivo (o que foi realmente escrito) —
+        const evidenceHtml = evidence.length > 0 ? `
+            <div style="margin-top:24px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.1);">
+                <div style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:#1D9E75; margin-bottom:8px;">📁 Arquivos Efetivamente Alterados</div>
+                ${evidence.map(ev => `
+                    <div style="background:rgba(29,158,117,0.07); border:1px solid rgba(29,158,117,0.2); border-radius:6px; padding:8px 12px; margin-bottom:6px; font-size:11px; display:grid; grid-template-columns:90px 110px 1fr; gap:8px; align-items:center;">
+                        <span style="color:#8b949e;">${new Date(ev.ts).toLocaleTimeString('pt-BR')}</span>
+                        <span style="color:#58a6ff; font-weight:600;">[${ev.agent}]</span>
+                        <span style="color:#c9d1d9;">${ev.filesChanged && ev.filesChanged.length > 0
+                            ? `✅ ${ev.filesChanged.join(', ')}`
+                            : '⚠️ Nenhum arquivo alterado'
+                        }</span>
                     </div>
                 `).join('')}
             </div>
         ` : '';
 
-        const auditHtml = logs.map(l => `
-            <div class="log-entry">
-                <span class="log-time" style="color: #8b949e;">[${new Date(l.timestamp).toLocaleTimeString()}]</span>
-                <span style="color: ${l.type === 'success' ? '#3fb950' : '#58a6ff'}; font-weight:600;">[${l.project}]</span>
-                ${l.message}
-            </div>
-        `).join('');
-
-        feed.innerHTML = evidenceHtml + auditHtml;
+        feed.innerHTML = trailHtml + evidenceHtml;
 
         const totalEl = document.getElementById('total-actions');
-        if (totalEl) totalEl.innerText = logs.length;
-        const tokenEl = document.getElementById('total-tokens-spent');
-        if (tokenEl) {
-            const totalTokens = currentProjects.reduce((acc, p) => acc + (p.Tokens || 0), 0);
-            tokenEl.innerText = totalTokens.toLocaleString();
-        }
+        if (totalEl) totalEl.innerText = trail.length;
     } catch (e) {
-        console.warn("Audit log fetch failed (normal if evidence_log.json missing):", e.message);
+        console.warn("Audit trail fetch failed:", e.message);
         const feed = document.getElementById('audit-feed');
-        if (feed) feed.innerHTML = '<div style="color: grey; padding: 20px;">Nenhuma atividade recente registrada.</div>';
+        if (feed) feed.innerHTML = '<div style="color:#8b949e; padding:20px;">Erro ao carregar auditoria.</div>';
     }
 }
 async function fetchProjects() {
@@ -445,8 +477,21 @@ function checkApprovals(projects) {
 
     gate.style.display = 'block';
 
+    // Extrai título limpo (remove prefixo "DIYAPP — " para exibição)
+    const cleanTitle = (pending.Title || '').replace(/^DIYAPP\s*[—-]\s*/i, '');
+
+    // Conta tarefas do backlog
+    let taskSummary = '';
+    try {
+        const backlog = Array.isArray(pending.Backlog) ? pending.Backlog : JSON.parse(pending.Backlog || '[]');
+        if (backlog.length > 0) {
+            const t = backlog[0];
+            taskSummary = `${t.agent || '?'}: ${(t.desc || '').substring(0, 60)}`;
+        }
+    } catch(e) {}
+
     if (deployPending) {
-        document.getElementById('approval-msg').innerText = `PR GITHUB: ${pending.Title}`;
+        document.getElementById('approval-msg').innerText = `PR PRONTA: ${cleanTitle}`;
         subMsg.innerText = "Código auditado e pronto para merge no master.";
         btnApprove.innerText = 'MERGE PR NO GITHUB';
         btnView.innerText = 'VER PR';
@@ -454,32 +499,32 @@ function checkApprovals(projects) {
         btnApprove.onclick = () => approveProject(pending.Id, 'DEPLOY_MERGE');
 
     } else if (stepPending) {
-        document.getElementById('approval-msg').innerText = `PASSO CONCLUÍDO: ${pending.Title}`;
-        subMsg.innerText = "Etapa técnica finalizada. Autorize a transição para o próximo passo.";
+        document.getElementById('approval-msg').innerText = `PASSO CONCLUÍDO: ${cleanTitle}`;
+        subMsg.innerText = taskSummary || "Etapa técnica finalizada. Autorize a transição para o próximo passo.";
         btnApprove.innerText = 'AUTORIZAR PRÓXIMO PASSO';
         btnView.innerText = 'INSPECIONAR LOG';
         btnView.onclick = () => viewStaging(pending.Id, false);
         btnApprove.onclick = () => approveProject(pending.Id, 'STEP');
 
     } else if (pending.Active_Agent === 'Aprovador') {
-        document.getElementById('approval-msg').innerText = `PLANO PRONTO: ${pending.Title}`;
-        subMsg.innerText = "O Product Owner finalizou o backlog. Revise e autorize o início.";
+        document.getElementById('approval-msg').innerText = `PLANO PRONTO: ${cleanTitle}`;
+        subMsg.innerText = taskSummary || "O Product Owner finalizou o backlog. Revise e autorize o início.";
         btnApprove.innerText = 'AUTORIZAR EXECUÇÃO';
         btnView.innerText = 'REVISAR BACKLOG';
         btnView.onclick = () => viewStaging(pending.Id, true);
         btnApprove.onclick = () => approveProject(pending.Id, 'PLANNING');
 
     } else if (pending.Active_Agent === 'Product Owner' && pending.Status === 'AWAITING_APPROVAL') {
-        document.getElementById('approval-msg').innerText = `INOVAÇÃO: ${pending.Title}`;
-        subMsg.innerText = "Novas propostas de evolução detectadas pela squad.";
+        document.getElementById('approval-msg').innerText = `INOVAÇÃO: ${cleanTitle}`;
+        subMsg.innerText = taskSummary || "Novas propostas de evolução detectadas pela squad.";
         btnApprove.innerText = 'INICIAR MELHORIAS';
         btnView.innerText = 'VER PROPOSTAS';
         btnView.onclick = () => viewStaging(pending.Id, true);
         btnApprove.onclick = () => approveProject(pending.Id, 'INNOVATION');
 
     } else {
-        document.getElementById('approval-msg').innerText = `DEPLOY: ${pending.Title}`;
-        subMsg.innerText = "Sistema estável em Staging. Autorize o deploy final.";
+        document.getElementById('approval-msg').innerText = `DEPLOY: ${cleanTitle}`;
+        subMsg.innerText = taskSummary || "Sistema estável em Staging. Autorize o deploy final.";
         btnApprove.innerText = 'APROVAR DEPLOY';
         btnView.innerText = 'VER ARQUIVOS';
         btnView.onclick = () => viewStaging(pending.Id, false);
@@ -915,15 +960,23 @@ async function sendChatMessage() {
         });
         const data = await res.json();
         document.getElementById(loadingId).remove();
-        addMessage('agent', data.reply);
-        if (currentInterviewStage === 'start') {
-            projectDraft.title = msg || 'Nova Melhoria';
+        // Remove tag [TITULO:] da mensagem exibida
+        const displayReply = data.reply.replace(/\[TITULO:[^\]]+\]/gi, '').trim();
+        addMessage('agent', displayReply);
+
+        // Captura título gerado pelo PM
+        if (data.generatedTitle) {
+            projectDraft.title = data.generatedTitle;
+            console.log(`[INTERFACE] Título extraído: "${projectDraft.title}"`);
+        } else if (currentInterviewStage === 'start' && msg) {
+            // Fallback: usa primeira mensagem do usuário como rascunho de título
+            projectDraft.title = msg.substring(0, 60);
         }
+
         if (msg.toUpperCase().includes('DIYAPP') || msg.toUpperCase().includes('SISTEMA') || isMetaInterview) {
-            isMetaInterview = true; // Auto-detect or persist meta intent
-            console.log('[INTERFACE] Modo Meta-Evolução Persistido.');
+            isMetaInterview = true;
         }
-        
+
         projectDraft.specs += `\n[P]: ${data.reply.split('?')[0]}? \n[R]: ${msg}`;
         chatHistory.push({ role: 'user', content: msg });
         chatHistory.push({ role: 'assistant', content: data.reply });

@@ -108,8 +108,17 @@
 
         <!-- AUDITORIA -->
         <div id="view-audit" class="view">
-            <h2 class="section-title">Auditoria & Transparência</h2>
-            <div id="audit-feed" style="background: var(--bg-glass); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; font-family: monospace; font-size: 12px; height: 600px; overflow-y: auto;"></div>
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+                <h2 class="section-title" style="margin:0;">Auditoria & Trail de Execução</h2>
+                <div style="display:flex; gap:12px; align-items:center;">
+                    <span style="font-size:11px; color:var(--text-secondary);">Total de eventos: <strong id="total-actions" style="color:var(--text-bright);">0</strong></span>
+                    <button onclick="fetchAuditLogs()" style="background:var(--bg-glass); border:1px solid var(--border-color); color:var(--text-secondary); padding:6px 14px; border-radius:6px; font-size:11px; cursor:pointer;">↻ Atualizar</button>
+                </div>
+            </div>
+            <div style="display:grid; grid-template-columns:70px 90px 110px 1fr; gap:8px; padding:6px 12px; font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--text-secondary); border-bottom:1px solid var(--border-color); margin-bottom:4px;">
+                <span>Horário</span><span>Fase</span><span>Ator</span><span>Ação</span>
+            </div>
+            <div id="audit-feed" style="background: var(--bg-glass); border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; font-family: monospace; font-size: 12px; height: 580px; overflow-y: auto;"></div>
         </div>
 
         <!-- ESTABILIDADE -->

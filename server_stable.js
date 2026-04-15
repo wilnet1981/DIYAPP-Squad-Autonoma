@@ -11,6 +11,7 @@ const billing = require('./services/billing_service');
 const fileService = require('./services/file_service');
 const security = require('./services/security_monitor');
 const usersApi = require('./services/mock-users-api');
+const auditTrail = require('./services/audit_trail');
 const multer = require('multer');
 
 const app = express();
@@ -239,6 +240,27 @@ app.get('/api/projects', async (req, res) => {
     catch (e) { res.status(500).json({ error: e.message }); }
 });
 
+// AUDIT TRAIL — log completo de todos os ciclos
+app.get('/api/trail', (req, res) => {
+    try {
+        const recent = auditTrail.getRecent(200);
+        res.json(recent);
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
+// AUDIT TRAIL — relatório textual de um projeto específico
+app.get('/api/trail/:projectId/report', (req, res) => {
+    try {
+        const report = auditTrail.generateReport(req.params.projectId);
+        if (!report) return res.json({ report: 'Nenhum registro encontrado para este projeto.' });
+        res.json({ report });
+    } catch (e) {
+        res.status(500).json({ error: e.message });
+    }
+});
+
 // Evidence log — what was actually changed per task
 app.get('/api/evidence', (req, res) => {
     try {
@@ -307,6 +329,17 @@ app.post('/api/projects', async (req, res) => {
  
         const project = await store.createProject(payload);
         console.log(`[SERVER] Projeto criado com sucesso! ID: ${project.Id}`);
+
+        auditTrail.log({
+            projectId: project.Id,
+            projectTitle: project.Title,
+            phase: 'BRIEFING',
+            actor: 'Sistema',
+            action: 'Projeto criado e enviado para fila de execução',
+            result: 'OK',
+            detail: `Objetivo: ${(goal || '').substring(0, 120)}`
+        });
+
         res.json(project);
     } catch (error) {
         console.error('[SERVER] ERRO CRÍTICO NA CRIAÇÃO DO PROJETO:', error.message);
@@ -334,59 +367,115 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
     }
 });
 
+// ─── Prompts por estágio para o PM ───────────────────────────────────────────
+function buildPMPrompt(stage, userMessage, history, fileContext) {
+    // Extrai contexto confirmado das mensagens anteriores
+    const userTurns = (history || []).filter(h => h.role === 'user').map(h => h.content);
+    const confirmedContext = userTurns.length > 0
+        ? `\nCONTEXTO JÁ CONFIRMADO PELO USUÁRIO:\n${userTurns.map((t, i) => `  R${i+1}: ${t.substring(0, 150)}`).join('\n')}\n`
+        : '';
+
+    const fileCtx = fileContext ? `\nARQUIVOS DE REFERÊNCIA ANEXADOS:\n${fileContext}\n` : '';
+
+    const stagePrompts = {
+        start: `Você é o PM da squad. Uma nova sessão de briefing foi iniciada.
+${confirmedContext}
+MENSAGEM INICIAL DO SISTEMA: "${userMessage}"
+
+Dê as boas-vindas de forma curta e profissional.
+Faça UMA única pergunta objetiva: o que o usuário quer construir ou mudar?
+Máximo 2 frases. Sem listas. Sem explicações.`,
+
+        step_1: `Você é o PM da squad.
+${confirmedContext}
+ÚLTIMA MENSAGEM DO USUÁRIO: "${userMessage}"
+${fileCtx}
+
+O usuário descreveu o que quer. Agora descubra o ESCOPO.
+Faça UMA pergunta objetiva sobre o que estará incluído ou excluído.
+NÃO repita o que o usuário já disse. NÃO faça duas perguntas.
+Máximo 2 frases.`,
+
+        step_2: `Você é o PM da squad.
+${confirmedContext}
+ÚLTIMA MENSAGEM DO USUÁRIO: "${userMessage}"
+${fileCtx}
+
+O escopo está definido. Agora descubra UM detalhe funcional importante que ainda não foi mencionado.
+Ex: comportamento de um botão, transição visual, persistência de estado, etc.
+UMA pergunta. Máximo 2 frases.`,
+
+        step_3: `Você é o PM da squad.
+${confirmedContext}
+ÚLTIMA MENSAGEM DO USUÁRIO: "${userMessage}"
+${fileCtx}
+
+Você tem informação suficiente para briefinq.
+Faça um resumo CURTO do que será feito (3-4 linhas).
+Termine com: "Posso passar isso para a squad agora?"
+NÃO faça perguntas adicionais.`,
+
+        step_4: `Você é o PM da squad.
+${confirmedContext}
+ÚLTIMA MENSAGEM DO USUÁRIO: "${userMessage}"
+
+O usuário confirmou. Encerre a conversa.
+Diga que vai acionar a squad agora.
+Inclua exatamente esta linha ao final: [TITULO: {título conciso de 4-6 palavras descrevendo a entrega}]
+Exemplo: [TITULO: Light Mode com Toggle de Tema]
+Substitua o conteúdo entre chaves pelo título real. Máximo 3 frases.`,
+
+        done: `Encerramento. Responda apenas: "Entendido. A squad já foi acionada."`
+    };
+
+    return stagePrompts[stage] || stagePrompts['step_1'];
+}
+
 // AI Real Interview logic
 app.post('/api/chat', async (req, res) => {
-    const { message, history, stage, fileContext, evolution } = req.body || {};
+    const { message, history, stage, fileContext, evolution, projectId } = req.body || {};
     try {
         console.log(`[DEBUG] Chat disparado. Stage: ${stage}. Evolution: ${evolution}`);
-        
-        const roleFile = (stage === 'gathering_tech') ? 'po_instruction.html' : 'pm_instruction.html';
 
-        let augmentedMessage = message || "Olá! Gostaria de iniciar um ajuste no sistema.";
-        
-        // Contexto para projeto de auto-evolução (DIYAPP)
-        if (evolution) {
-            augmentedMessage = `[MODO AUTO-EVOLUÇÃO DIYAPP ATIVO]
-O usuário quer realizar um ajuste no prprio sistema DIYAPP.
-Aja como um Product Manager cauteloso. Descubra exatamente o que o usuário quer mudar.
-Não encerre a conversa enquanto houver dúvidas sobre o objetivo ou escopo.
-Pergunte uma coisa de cada vez.
-
-Solicitação do usuário: ${message}`;
-        }
-
-        if (fileContext) {
-            augmentedMessage += `\n\n[CONTEXTO DE DOCUMENTOS ANEXADOS]:\n${fileContext}`;
-        }
+        const prompt = buildPMPrompt(stage, message || '', history, fileContext);
 
         const aiResult = await aiService.getSmartResponse({
-            role: (stage === 'gathering_tech') ? 'Product Owner' : 'Product Manager',
-            roleFile: roleFile,
-            message: augmentedMessage,
-            history: history || []
+            role: 'Product Manager',
+            roleFile: 'pm_instruction.html',
+            message: prompt,
+            history: [] // histórico já embutido no prompt estruturado
         });
 
-        // Evolução de estágios: Curta para DIYAPP, Standard para outros
-        let nextStage = stage;
-        const standardStages = ['start', 'step_1', 'step_2', 'step_3', 'step_4', 'step_5', 'done'];
-        const evolutionStages = ['start', 'step_1', 'step_2', 'step_3', 'step_4', 'done'];
-        
-        const stagesOrder = (evolution) ? evolutionStages : standardStages;
-        const currentIndex = stagesOrder.indexOf(stage);
-        
-        if (currentIndex === -1) {
-            nextStage = 'done';
-        } else {
-            nextStage = stagesOrder[currentIndex + 1] || 'done';
+        // Registra no audit trail
+        auditTrail.log({
+            projectId: projectId || 'BRIEFING',
+            projectTitle: 'Briefing em andamento',
+            phase: 'BRIEFING',
+            actor: 'PM',
+            action: `[${stage}] Usuário: "${(message || '').substring(0, 80)}"`,
+            result: 'OK',
+            detail: `PM respondeu: "${aiResult.reply.substring(0, 100)}"`
+        });
+
+        // Extrai título se o PM gerou [TITULO: ...]
+        let generatedTitle = null;
+        const titleMatch = aiResult.reply.match(/\[TITULO:\s*([^\]]{3,80})\]/i);
+        if (titleMatch) {
+            generatedTitle = titleMatch[1].trim();
+            console.log(`[CHAT] Título gerado pelo PM: "${generatedTitle}"`);
         }
 
-        if (aiResult.reply.includes('[SQUAD_NOTIFICADA]') || aiResult.reply.includes('[FINALIZAR]') || aiResult.reply.includes('SQUAD NOTIFICADA')) {
+        // Progressão de estágio
+        const stages = ['start', 'step_1', 'step_2', 'step_3', 'step_4', 'done'];
+        const currentIndex = stages.indexOf(stage);
+        let nextStage = currentIndex === -1 ? 'done' : (stages[currentIndex + 1] || 'done');
+
+        if (aiResult.reply.includes('[SQUAD_NOTIFICADA]') || aiResult.reply.includes('[FINALIZAR]')) {
             nextStage = 'done';
-            console.log(`[CHAT] Marcador de encerramento detectado. Forçando nextStage: done`);
         }
 
-        console.log(`[DEBUG] Finalizando turno. Atual: ${stage} -> Próximo: ${nextStage}`);
-        res.json({ reply: aiResult.reply, nextStage });
+        console.log(`[DEBUG] Estágio: ${stage} -> ${nextStage}`);
+        res.json({ reply: aiResult.reply, nextStage, generatedTitle });
     } catch (e) {
         console.error('[ERRO CRÍTICO NO CHAT]:', e);
         res.status(500).json({ reply: 'Erro interno no servidor de IA.', nextStage: stage });
