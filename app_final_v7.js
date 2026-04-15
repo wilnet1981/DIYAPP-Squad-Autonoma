@@ -1025,7 +1025,20 @@ function addMessage(type, text, id = null) {
 }
 
 async function createProject() {
-    let title = projectDraft.title || 'Novo Projeto Squad';
+    // Prioridade: 1) título gerado pelo PM com [TITULO:], 2) mensagens do usuário, 3) fallback genérico
+    let title = projectDraft.title;
+    const genericFallbacks = ['novo projeto squad', 'nova melhoria', '', null, undefined];
+    if (genericFallbacks.includes((title || '').toLowerCase().trim())) {
+        // Tenta extrair das mensagens do usuário no histórico de chat
+        const userMsgs = chatHistory.filter(h => h.role === 'user').map(h => h.content.trim()).filter(Boolean);
+        if (userMsgs.length > 0) {
+            // Usa as primeiras duas respostas do usuário para montar um título descritivo
+            const raw = userMsgs.slice(0, 2).join(' — ').replace(/\n/g, ' ').trim();
+            title = raw.length > 70 ? raw.substring(0, 67) + '...' : raw;
+        } else {
+            title = 'Nova Melhoria';
+        }
+    }
     if (isMetaInterview && !title.toUpperCase().includes('DIYAPP')) {
         title = `DIYAPP — ${title}`;
     }
