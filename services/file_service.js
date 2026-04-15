@@ -28,12 +28,12 @@ async function extractTextFromFile(filePath, mimeType) {
             return text;
         }
 
+        if (mimeType === 'application/json' || mimeType === 'text/csv' || mimeType.startsWith('text/')) {
+            return fs.readFileSync(filePath, 'utf8');
+        }
+        
         if (mimeType.startsWith('image/')) {
             return `[IMAGEM DETECTADA: ${path.basename(filePath)}] - O usuário anexou uma imagem como referência visual.`;
-        }
-
-        if (mimeType.startsWith('text/')) {
-            return fs.readFileSync(filePath, 'utf8');
         }
 
         return `[Arquivo do tipo ${mimeType} anexado, mas sem extrator de texto configurado.]`;

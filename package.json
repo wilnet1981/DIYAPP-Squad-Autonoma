@@ -2,8 +2,9 @@
   "name": "squad-autonoma",
   "version": "1.0.0",
   "description": "",
-  "main": "app.js",
+  "main": "server_stable.js",
   "scripts": {
+    "start": "node server_stable.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -24,10 +25,12 @@
     "@mistralai/mistralai": "^2.2.0",
     "adm-zip": "^0.5.17",
     "axios": "^1.15.0",
+    "better-sqlite3": "^12.9.0",
     "cheerio": "^1.2.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.1",
     "express": "^5.2.1",
+    "groq-sdk": "^1.1.2",
     "mammoth": "^1.12.0",
     "mime-types": "^3.0.2",
     "multer": "^2.1.1",
