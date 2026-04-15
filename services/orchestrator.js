@@ -427,14 +427,26 @@ REGRAS:
                 const stagingFiles = fs.existsSync(stagingPath)
                     ? fs.readdirSync(stagingPath).filter(f => !f.startsWith('.'))
                     : [];
-                const tasks = getLocalBacklog(project.Id) || [];
+                const tasks = getLocalBacklog(project) || [];
                 const failedTasks = tasks.filter(t => t.status === 'FAILED');
                 const doneTasks = tasks.filter(t => t.status === 'DONE');
 
                 // Se havia tarefas mas nenhuma foi concluída com sucesso → não aceitar CLEAN
                 if (tasks.length > 0 && doneTasks.length === 0 && stagingFiles.length === 0) {
+                    const MAX_RETRIES = 2;
+                    const abandonedTasks = tasks.filter(t => t.status === 'FAILED' && (t.retries || 0) >= MAX_RETRIES);
+                    if (abandonedTasks.length === tasks.length) {
+                        // Todas as tarefas foram permanentemente abandonadas — não resetar (evita loop infinito)
+                        console.error(`[QA-GUARD] ❌ Todas as ${abandonedTasks.length} tarefa(s) foram ABANDONADAS após ${MAX_RETRIES} tentativas cada. Encerrando sprint sem deploy.`);
+                        await store.updateProject(project.Id, {
+                            Status: 'DONE',
+                            Active_Agent: null,
+                            LogEntry: `[QA-GUARD] Sprint encerrada — todas as tarefas foram abandonadas após ${MAX_RETRIES} tentativas sem sucesso. Verifique os logs de erro dos agentes.`
+                        });
+                        return;
+                    }
                     console.warn(`[QA-GUARD] ⚠️ QA disse CLEAN mas NENHUMA tarefa foi concluída e staging está vazio. Resetando sprint.`);
-                    tasks.forEach(t => { t.status = 'PENDING'; t.retries = 0; delete t.failReason; });
+                    tasks.forEach(t => { if (t.status !== 'FAILED' || (t.retries || 0) < MAX_RETRIES) { t.status = 'PENDING'; t.retries = 0; delete t.failReason; } });
                     saveLocalBacklog(project.Id, tasks);
                     await store.updateProject(project.Id, {
                         Active_Agent: 'Sprint Ativa (HIVE)',
@@ -483,12 +495,23 @@ REGRAS:
                     const stagingFiles2 = fs.existsSync(stagingPath2)
                         ? fs.readdirSync(stagingPath2).filter(f => !f.startsWith('.'))
                         : [];
-                    const tasks2 = getLocalBacklog(project.Id) || [];
+                    const tasks2 = getLocalBacklog(project) || [];
                     const doneTasks2 = tasks2.filter(t => t.status === 'DONE');
 
                     if (tasks2.length > 0 && doneTasks2.length === 0 && stagingFiles2.length === 0) {
+                        const MAX_RETRIES2 = 2;
+                        const abandoned2 = tasks2.filter(t => t.status === 'FAILED' && (t.retries || 0) >= MAX_RETRIES2);
+                        if (abandoned2.length === tasks2.length) {
+                            console.error(`[QA-GUARD] ❌ Todas as tarefas abandonadas definitivamente. Encerrando sprint.`);
+                            await store.updateProject(project.Id, {
+                                Status: 'DONE',
+                                Active_Agent: null,
+                                LogEntry: `[QA-GUARD] Sprint encerrada — todas as tarefas abandonadas após ${MAX_RETRIES2} tentativas.`
+                            });
+                            return;
+                        }
                         console.warn('[QA-GUARD] ⚠️ QA sem estrutura e staging vazio. Resetando sprint.');
-                        tasks2.forEach(t => { t.status = 'PENDING'; t.retries = 0; delete t.failReason; });
+                        tasks2.forEach(t => { if (t.status !== 'FAILED' || (t.retries || 0) < MAX_RETRIES2) { t.status = 'PENDING'; t.retries = 0; delete t.failReason; } });
                         saveLocalBacklog(project.Id, tasks2);
                         await store.updateProject(project.Id, {
                             Active_Agent: 'Sprint Ativa (HIVE)',
@@ -590,13 +613,21 @@ Retorne APENAS JSON: [BACKLOG: {"tasks": [{"agent": "...", "desc": "..."}]}]`;
 Este projeto modifica os arquivos EXISTENTES da plataforma DIYAPP.
 NÃO é React. É HTML/CSS/JS puro.
 Crie tarefas que referenciem os arquivos e seletores REAIS.
-Exemplo correto: {"agent": "Frontend", "desc": "Em style.css, no seletor #btn-approve-deploy, alterar background de #1a7f37 para #0d6e2f"}
+
+REGRAS CRÍTICAS:
+1. A tarefa DEVE ser cirúrgica: referenciar o arquivo exato + seletor/bloco exato que muda.
+2. Para mudanças visuais (cores, tema, modo claro): use "agent": "Frontend" e modifique style.css usando [PATCH: style.css] com <<<SEARCH>>>...<<<REPLACE>>>.
+3. Para light mode/tema claro: adicione variáveis CSS no :root e uma classe .light-mode no body. Use o seletor exato já presente no arquivo.
+4. NÃO use [FILE:] para arquivos que já existem. Use [PATCH:] com SEARCH/REPLACE cirúrgico.
+5. O trecho SEARCH deve ser copiado EXATAMENTE do arquivo mostrado abaixo.
+
 ${fileContext}`;
             poMessage = `PROJETO: "${project.Title}"
 OBJETIVO: ${project.Project_Goal}
 ESCOPO: ${project.Technical_Specs}
 ${metaContext}
 TAREFA: Crie o BACKLOG com EXATAMENTE 1 tarefa CIRÚRGICA e DIRETA. Apenas uma. Não mais.
+A tarefa deve ser específica o suficiente para que o agente saiba exatamente qual trecho do arquivo modificar.
 Retorne JSON: [BACKLOG: {"tasks": [{"agent": "Frontend", "desc": "..."}]}]`;
         } else {
             // PROJETO EXTERNO (cria software novo)
@@ -634,7 +665,7 @@ Retorne JSON: [BACKLOG: {"tasks": [{"agent": "Backend", "desc": "..."}]}]`;
 
     // 2. Sprint Handling (Parallelism)
     // Check local memory first, fallback to DB
-    let tasks = getLocalBacklog(project.Id);
+    let tasks = getLocalBacklog(project);
     if (!tasks && project.Backlog) {
         try { tasks = JSON.parse(project.Backlog); } catch(e) { tasks = []; }
     }
@@ -1263,11 +1294,39 @@ function processPatches(projectId, text, projectTitle = '') {
             continue;
         }
 
-        const original = fs.readFileSync(targetPath, 'utf8');
+        // Para meta-projetos: se já existe uma versão em staging, ler de lá (é o estado mais recente)
+        const stagingFilePath = isMeta ? path.join(__dirname, '../data/staging', projectId.toString(), rawFileName) : null;
+        const readFrom = (stagingFilePath && fs.existsSync(stagingFilePath)) ? stagingFilePath : targetPath;
+        const original = fs.readFileSync(readFrom, 'utf8');
         const { content: patched, applied } = applyPatch(original, patchContent);
 
         if (applied === 0) {
-            console.warn(`[PATCH] ⚠️ Nenhum SEARCH encontrado em ${rawFileName} — arquivo NÃO mudou`);
+            // IDEMPOTENCY CHECK: verifica se o conteúdo do REPLACE já está no arquivo.
+            // Isso acontece quando o patch já foi aplicado em ciclo anterior mas a tarefa
+            // foi marcada como FAILED (ex: verifier reverteu o staging, mas a produção já tinha o conteúdo).
+            const replaceBlocks = [];
+            const replRegex = /<<<SEARCH>>>[\s\S]+?<<<REPLACE>>>([\s\S]+?)(?=<<<SEARCH>>>|$)/g;
+            let rm;
+            while ((rm = replRegex.exec(patchContent)) !== null) {
+                const repl = rm[1].replace(/^\n/, '').replace(/\n$/, '');
+                if (repl) replaceBlocks.push(repl);
+            }
+            const alreadyApplied = replaceBlocks.length > 0 && replaceBlocks.every(repl =>
+                original.includes(repl) || original.replace(/\r\n/g, '\n').includes(repl.replace(/\r\n/g, '\n'))
+            );
+            if (alreadyApplied) {
+                console.log(`[PATCH] ✅ IDEMPOTENTE: ${rawFileName} já contém as mudanças — marcado como aplicado`);
+                // Copia o arquivo atual para staging para que o verifier possa validar
+                if (isMeta) {
+                    const stagingPath = path.join(__dirname, '../data/staging', projectId.toString());
+                    if (!fs.existsSync(stagingPath)) fs.mkdirSync(stagingPath, { recursive: true });
+                    const stagingFile = path.join(stagingPath, rawFileName);
+                    if (!fs.existsSync(stagingFile)) fs.copyFileSync(targetPath, stagingFile);
+                }
+                changedFiles.push(rawFileName);
+            } else {
+                console.warn(`[PATCH] ⚠️ Nenhum SEARCH encontrado em ${rawFileName} — arquivo NÃO mudou`);
+            }
             continue;
         }
 
@@ -1418,11 +1477,23 @@ async function finalizeProjectDeploy(project) {
 
         if (stagingFiles.length === 0) {
             console.error(`[META-DEPLOY] ❌ Staging vazio para "${project.Title}". Nenhuma mudança foi gravada pelos agentes.`);
-            // Reset: volta tarefas FAILED para PENDING e re-entra na sprint
-            const tasks = getLocalBacklog(project.Id) || [];
+            const MAX_RETRIES_DEPLOY = 2;
+            const tasks = getLocalBacklog(project) || [];
+            const abandonedTasks = tasks.filter(t => t.status === 'FAILED' && (t.retries || 0) >= MAX_RETRIES_DEPLOY);
+            // Se todas as tarefas foram abandonadas definitivamente, encerra sem loop infinito
+            if (abandonedTasks.length > 0 && abandonedTasks.length >= tasks.filter(t => t.status === 'FAILED').length) {
+                console.error(`[META-DEPLOY] ❌ Todas as tarefas foram abandonadas. Encerrando projeto sem deploy.`);
+                await store.updateProject(project.Id, {
+                    Status: 'DONE',
+                    Active_Agent: null,
+                    LogEntry: `[META-DEPLOY] Projeto encerrado — agentes não conseguiram produzir mudanças válidas após múltiplas tentativas. Verifique os logs de erro.`
+                });
+                return;
+            }
+            // Reset: volta tarefas que ainda têm tentativas disponíveis
             let resetCount = 0;
             tasks.forEach(t => {
-                if (t.status === 'FAILED' || t.status === 'DONE') {
+                if ((t.status === 'FAILED' && (t.retries || 0) < MAX_RETRIES_DEPLOY) || t.status === 'DONE') {
                     t.status = 'PENDING';
                     t.retries = 0;
                     delete t.failReason;
