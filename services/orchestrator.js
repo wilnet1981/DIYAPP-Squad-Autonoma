@@ -627,10 +627,10 @@ Crie tarefas que referenciem os arquivos e seletores REAIS.
 
 REGRAS CRÍTICAS:
 1. A tarefa DEVE ser cirúrgica: referenciar o arquivo exato + seletor/bloco exato que muda.
-2. Para mudanças visuais (cores, tema, modo claro): use "agent": "Frontend" e modifique style.css usando [PATCH: style.css] com <<<SEARCH>>>...<<<REPLACE>>>.
-3. Para light mode/tema claro: adicione variáveis CSS no :root e uma classe .light-mode no body. Use o seletor exato já presente no arquivo.
-4. NÃO use [FILE:] para arquivos que já existem. Use [PATCH:] com SEARCH/REPLACE cirúrgico.
-5. O trecho SEARCH deve ser copiado EXATAMENTE do arquivo mostrado abaixo.
+2. Para adicionar CSS NOVO (novas classes, temas, variáveis): instrua o agente a usar <<<APPEND>>> no final do style.css. NÃO peça para modificar o :root existente.
+3. Para light mode/tema claro: instrua adicionar uma classe .light-mode no FINAL do style.css com as variáveis sobrescritas. Ex: "body.light-mode { --bg-primary: #fff; ... }".
+4. Para modificar algo EXISTENTE: use <<<SEARCH>>>...<<<REPLACE>>> com o trecho copiado EXATAMENTE do arquivo abaixo.
+5. NÃO use [FILE:] para arquivos que já existem.
 
 ${fileContext}`;
             poMessage = `PROJETO: "${project.Title}"
@@ -759,17 +759,27 @@ Se a tarefa pede para referenciar uma view/nav inexistente, use o ID correto da 
 Você está modificando arquivos EXISTENTES do sistema DIYAPP.
 NÃO é React. É HTML/CSS/JS puro.
 
-FORMATO OBRIGATÓRIO para modificar um arquivo existente:
-[PATCH: nome_do_arquivo]
+FORMATOS DISPONÍVEIS dentro de [PATCH: nome_do_arquivo]:
+
+1. SUBSTITUIÇÃO — troca um trecho EXATO por outro:
+[PATCH: arquivo]
 <<<SEARCH>>>
-trecho EXATO do arquivo original que deve ser substituído
+trecho exato do arquivo (copie letra por letra do contexto abaixo)
 <<<REPLACE>>>
-novo trecho que substitui o anterior
+novo trecho que substitui
 [/PATCH]
 
-Você pode ter múltiplos blocos <<<SEARCH>>>...<<<REPLACE>>> dentro de um [PATCH:].
-Use [FILE: nome] ... [/FILE] APENAS para criar arquivos NOVOS que não existem ainda.
-NÃO retorne o arquivo inteiro. APENAS o trecho que muda.
+2. ADIÇÃO AO FINAL — adiciona conteúdo novo ao final do arquivo:
+[PATCH: arquivo]
+<<<APPEND>>>
+conteúdo novo a adicionar no final
+[/PATCH]
+
+REGRAS:
+- Use <<<APPEND>>> para adicionar classes CSS novas, funções JS novas, ou qualquer conteúdo que não substitui nada existente.
+- Use <<<SEARCH>>>...<<<REPLACE>>> SOMENTE quando precisar modificar algo JÁ EXISTENTE. O SEARCH deve ser copiado EXATAMENTE do arquivo.
+- Use [FILE: nome] APENAS para criar arquivos que NÃO existem ainda.
+- NÃO retorne o arquivo inteiro. APENAS o bloco [PATCH:].
 ${domContractContext}
 ${fileContext}`;
                 }
@@ -1147,17 +1157,37 @@ async function deployMetaChanges(projectId) {
 
 /**
  * Aplica blocos [PATCH: filename] ao arquivo existente.
- * Formato esperado dentro de cada bloco:
- *   <<<SEARCH>>>
- *   trecho exato a substituir
- *   <<<REPLACE>>>
- *   novo trecho
+ * Formatos suportados:
+ *   <<<SEARCH>>> / <<<REPLACE>>>  — substitui trecho exato
+ *   <<<APPEND>>>                  — adiciona ao final do arquivo (ideal para CSS/JS novo)
  *
- * Múltiplos SEARCH/REPLACE permitidos por bloco.
- * Retorna o número de patches aplicados com sucesso.
+ * Múltiplos blocos permitidos por PATCH.
+ * Retorna { content, applied }.
  */
 function applyPatch(originalContent, patchContent) {
-    const opRegex = /<<<SEARCH>>>([\s\S]+?)<<<REPLACE>>>([\s\S]+?)(?=<<<SEARCH>>>|$)/g;
+    let result = originalContent;
+    let applied = 0;
+
+    // ── APPEND blocks (adiciona ao final) ──────────────────────────────────────
+    const appendRegex = /<<<APPEND>>>([\s\S]+?)(?=<<<SEARCH>>>|<<<APPEND>>>|<<<REPLACE>>>|\[\/PATCH\]|$)/g;
+    let appendMatch;
+    while ((appendMatch = appendRegex.exec(patchContent)) !== null) {
+        let toAppend = appendMatch[1].replace(/^\n/, '').replace(/\n$/, '');
+        if (!toAppend) continue;
+        // Evita duplicata: só appenda se o conteúdo não estiver no arquivo
+        const normalize = (s) => s.replace(/\r\n/g, '\n').replace(/[ \t]+/g, ' ');
+        if (normalize(result).includes(normalize(toAppend.substring(0, 40)))) {
+            console.log(`[PATCH] APPEND já presente — ignorado (idempotente)`);
+            applied++; // conta como aplicado (idempotente)
+            continue;
+        }
+        result = result + '\n\n' + toAppend;
+        applied++;
+        console.log(`[PATCH] <<<APPEND>>> aplicado (${toAppend.length} chars adicionados ao final)`);
+    }
+
+    // ── SEARCH/REPLACE blocks ──────────────────────────────────────────────────
+    const opRegex = /<<<SEARCH>>>([\s\S]+?)<<<REPLACE>>>([\s\S]+?)(?=<<<SEARCH>>>|<<<APPEND>>>|\[\/PATCH\]|$)/g;
     let result = originalContent;
     let applied = 0;
     let match;
