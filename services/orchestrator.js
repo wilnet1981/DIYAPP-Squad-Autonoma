@@ -1253,12 +1253,10 @@ function applyPatch(originalContent, patchContent) {
 
     // ── SEARCH/REPLACE blocks ──────────────────────────────────────────────────
     const opRegex = /<<<SEARCH>>>([\s\S]+?)<<<REPLACE>>>([\s\S]+?)(?=<<<SEARCH>>>|<<<APPEND>>>|\[\/PATCH\]|$)/g;
-    let result = originalContent;
-    let applied = 0;
     let match;
 
     // Normaliza quebras de linha para busca consistente (\r\n -> \n)
-    const normalize = (s) => s.replace(/\r\n/g, '\n');
+    const normalizeNewlines = (s) => s.replace(/\r\n/g, '\n');
 
     while ((match = opRegex.exec(patchContent)) !== null) {
         let search = match[1];
@@ -1270,8 +1268,8 @@ function applyPatch(originalContent, patchContent) {
 
         if (!search) continue;
 
-        const normalizedResult = normalize(result);
-        const normalizedSearch = normalize(search);
+        const normalizedResult = normalizeNewlines(result);
+        const normalizedSearch = normalizeNewlines(search);
 
         if (normalizedResult.includes(normalizedSearch)) {
             // Se as quebras de linha baterem exatamente no original, usa replace simples
