@@ -799,8 +799,73 @@ ${fileContext}`;
                 }
 
                 const { count: patchCount, changedFiles } = processPatches(project.Id, aiResult.reply, project.Title);
-                const fileCount = processFiles(project.Id, aiResult.reply, project.Title);
+                let fileCount = processFiles(project.Id, aiResult.reply, project.Title);
                 const cmdCount = processCommands(project.Id, aiResult.reply, project.Title);
+
+                // FALLBACK: se nada foi escrito E é meta-projeto, tenta extrair blocos ```css/```js
+                // e appendar ao arquivo relevante mencionado na tarefa
+                if (patchCount === 0 && fileCount === 0 && isMeta) {
+                    const codeBlockRegex = /```(?:css|js|javascript|html)?\s*\n([\s\S]+?)```/g;
+                    let cbMatch;
+                    while ((cbMatch = codeBlockRegex.exec(aiResult.reply)) !== null) {
+                        const codeContent = cbMatch[1].trim();
+                        if (!codeContent || codeContent.length < 10) continue;
+
+                        // Detecta qual arquivo pelo conteúdo do código
+                        let targetFile = null;
+                        if (codeContent.includes('{') && (codeContent.includes('color') || codeContent.includes('background') || codeContent.includes('--') || codeContent.includes('body') || codeContent.includes('.light'))) {
+                            targetFile = 'style.css';
+                        } else if (task.desc && task.desc.toLowerCase().includes('style.css')) {
+                            targetFile = 'style.css';
+                        } else if (task.desc && task.desc.toLowerCase().includes('index.html') && codeContent.includes('<')) {
+                            targetFile = 'index.html';
+                        }
+
+                        if (!targetFile) continue;
+
+                        const rootFile = path.join(__dirname, '..', targetFile);
+                        if (!fs.existsSync(rootFile)) continue;
+
+                        const stagingDir = path.join(__dirname, '../data/staging', project.Id.toString());
+                        if (!fs.existsSync(stagingDir)) fs.mkdirSync(stagingDir, { recursive: true });
+                        const stagingFile = path.join(stagingDir, targetFile);
+                        const base = fs.existsSync(stagingFile) ? fs.readFileSync(stagingFile, 'utf8') : fs.readFileSync(rootFile, 'utf8');
+
+                        // Não duplica se já presente
+                        if (base.includes(codeContent.substring(0, 40))) {
+                            console.log(`[FALLBACK-EXTRACT] Conteúdo já presente em ${targetFile} — ignorado`);
+                            fileCount++;
+                            changedFiles.push(targetFile);
+                            break;
+                        }
+
+                        const merged = base + '\n\n/* === EXTRAÇÃO AUTOMÁTICA DE BLOCO MARKDOWN === */\n' + codeContent;
+                        const integrity = verifyFileIntegrity(targetFile, merged);
+                        if (!integrity.ok) { console.error(`[FALLBACK-EXTRACT] Integridade falhou: ${integrity.reason}`); continue; }
+
+                        fs.writeFileSync(stagingFile, merged);
+                        console.log(`[FALLBACK-EXTRACT] ✅ Código extraído do markdown e appendado em ${targetFile} (${codeContent.length} chars)`);
+                        fileCount++;
+                        changedFiles.push(targetFile);
+                        break;
+                    }
+                }
+
+                // LOG DA RESPOSTA BRUTA (sempre, para diagnóstico)
+                try {
+                    const debugDir = path.join(__dirname, '../data/debug');
+                    if (!fs.existsSync(debugDir)) fs.mkdirSync(debugDir, { recursive: true });
+                    const debugFile = path.join(debugDir, `agent_reply_${Date.now()}.txt`);
+                    fs.writeFileSync(debugFile, [
+                        `PROJETO: ${project.Title}`,
+                        `AGENTE: ${task.agent}`,
+                        `TAREFA: ${task.desc}`,
+                        `PROVIDER: ${aiResult.provider}`,
+                        `PATCHES: ${patchCount} | FILES: ${fileCount}`,
+                        `---RESPOSTA BRUTA---`,
+                        aiResult.reply
+                    ].join('\n'));
+                } catch(_) {}
                 const tokenGain = (aiResult.reply.length * 2);
 
                 // Peça 4: validação DOM-CONTRACT pós-patch — rejeita patches JS com IDs inválidos
@@ -1485,19 +1550,57 @@ function processFiles(projectId, text, projectTitle = '') {
         // Limpar possíveis caracteres de markdown do nome do arquivo
         rawFileName = rawFileName.replace(/\*|`|\[|\]/g, '');
 
-        // META-GUARD: Bloqueia [FILE:] em arquivos que já existem na plataforma.
-        // Agentes DEVEM usar [PATCH:] para modificar arquivos existentes.
+        const content = match[2].trim();
+
+        // META-GUARD: arquivo já existe na plataforma
         if (isMeta) {
-            const existsInRoot = fs.existsSync(path.join(__dirname, '..', rawFileName));
+            const rootFilePath = path.join(__dirname, '..', rawFileName);
+            const existsInRoot = fs.existsSync(rootFilePath);
             if (existsInRoot) {
-                console.error(`[FILE-GUARD] ❌ BLOQUEADO: "${rawFileName}" já existe na plataforma. Use [PATCH:] para modificar arquivos existentes. [FILE:] rejeitado.`);
-                continue;
+                const ext = path.extname(rawFileName).toLowerCase();
+
+                // CSS/JS parcial: appenda ao invés de bloquear
+                // Heurística: conteúdo do agente é menor que 80% do original → é uma adição, não uma substituição
+                const originalContent = fs.readFileSync(rootFilePath, 'utf8');
+                const isPartialAddition = content.length < originalContent.length * 0.8;
+
+                if ((ext === '.css' || ext === '.js') && isPartialAddition) {
+                    // Verifica se o conteúdo já está presente (idempotência)
+                    const alreadyPresent = originalContent.includes(content.substring(0, Math.min(50, content.length)));
+                    if (alreadyPresent) {
+                        console.log(`[FILE-GUARD] ✅ IDEMPOTENTE: "${rawFileName}" já contém este conteúdo — ignorado`);
+                        count++; // conta como feito
+                        continue;
+                    }
+
+                    // Appenda ao staging
+                    const stagingFile = path.join(projectPath, rawFileName);
+                    const baseContent = fs.existsSync(stagingFile)
+                        ? fs.readFileSync(stagingFile, 'utf8')
+                        : originalContent;
+                    const merged = baseContent + '\n\n/* === ADIÇÃO AUTOMÁTICA === */\n' + content;
+
+                    // Valida integridade do CSS/JS merged
+                    const integrity = verifyFileIntegrity(rawFileName, merged);
+                    if (!integrity.ok) {
+                        console.error(`[FILE-GUARD] ❌ REJEITADO (integridade): ${rawFileName} — ${integrity.reason}`);
+                        continue;
+                    }
+
+                    if (!fs.existsSync(path.dirname(stagingFile))) fs.mkdirSync(path.dirname(stagingFile), { recursive: true });
+                    fs.writeFileSync(stagingFile, merged);
+                    console.log(`[FILE-GUARD] ✅ "${rawFileName}" — conteúdo APPENDADO ao staging (${content.length} chars)`);
+                    count++;
+                    continue;
+                } else {
+                    console.error(`[FILE-GUARD] ❌ BLOQUEADO: "${rawFileName}" já existe e o conteúdo parece ser uma substituição total. Use [PATCH:] para modificar arquivos existentes.`);
+                    continue;
+                }
             }
         }
 
         const filePath = path.join(projectPath, rawFileName);
-        const content = match[2].trim();
-        
+
         // SECURITY VALIDATION
         if (!security.checkFileWrite(projectId, rawFileName, content)) {
             console.error(`[GUARD] Gravação abortada por risco de loop: ${rawFileName}`);
