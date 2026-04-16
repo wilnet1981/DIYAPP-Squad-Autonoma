@@ -907,24 +907,24 @@ async function startInterview() {
 
 function initTheme() {
     const savedTheme = localStorage.getItem('theme') || 'dark';
-    const icon = document.getElementById('theme-icon');
+    const btn = document.getElementById('theme-toggle');
     if (savedTheme === 'light') {
         document.body.classList.add('light-mode');
-        if (icon) icon.innerText = '☀️';
+        if (btn) btn.innerText = '☀️';
     } else {
         document.body.classList.remove('light-mode');
-        if (icon) icon.innerText = '🌙';
+        if (btn) btn.innerText = '🌙';
     }
 }
 
 function toggleTheme() {
     const isLight = document.body.classList.toggle('light-mode');
-    const icon = document.getElementById('theme-icon');
+    const btn = document.getElementById('theme-toggle');
     if (isLight) {
-        icon.innerText = '☀️';
+        if (btn) btn.innerText = '☀️';
         localStorage.setItem('theme', 'light');
     } else {
-        icon.innerText = '🌙';
+        if (btn) btn.innerText = '🌙';
         localStorage.setItem('theme', 'dark');
     }
     
