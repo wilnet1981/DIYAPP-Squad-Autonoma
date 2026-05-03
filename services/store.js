@@ -167,3 +167,17 @@ async function updateProject(id, data) {
 }
 
 module.exports = { getProjects, createProject, updateProject };
+
+
+/**
+ * deleteDoneProjects - Remove todos os projetos com status 'DONE' do banco SQLite.
+ * @returns {number} Número de registros deletados
+ */
+function deleteDoneProjects() {
+    console.log('[STORE] Removendo projetos finalizados (DONE)...');
+    const info = db.prepare('DELETE FROM projects WHERE status = ?').run('DONE');
+    console.log(`[STORE] ${info.changes} projetos removidos.`);
+    return info.changes;
+}
+
+module.exports = { getProjects, createProject, updateProject, deleteDoneProjects };
